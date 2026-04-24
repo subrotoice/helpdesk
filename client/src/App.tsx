@@ -11,7 +11,10 @@ function App() {
           <Link to="/" className="text-sm text-gray-600 hover:text-gray-900">
             Home
           </Link>
-          <Link to="/tickets" className="text-sm text-gray-600 hover:text-gray-900">
+          <Link
+            to="/tickets"
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
             Tickets
           </Link>
         </div>

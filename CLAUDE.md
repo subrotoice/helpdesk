@@ -15,7 +15,7 @@ See `project-scope.md` for full feature list and `implementation-plan.md` for th
 | Frontend   | React 19, TypeScript, Tailwind CSS v4, React Router v7 |
 | Backend    | Express 5, TypeScript, Bun runtime                     |
 | Database   | PostgreSQL + Prisma ORM                                |
-| Auth       | Database sessions (bcrypt + session table)             |
+| Auth       | Better Auth (email/password, database sessions)        |
 | AI         | Anthropic Claude API (`@anthropic-ai/sdk`)             |
 | Email      | Resend (inbound webhook + outbound)                    |
 | Deployment | Docker + cloud provider                                |
@@ -74,4 +74,4 @@ Use context7 for: React Router, Prisma, Express, Tailwind CSS, Anthropic SDK, Bu
 - TypeScript strict mode is enabled on both client and server
 - No comments unless the WHY is non-obvious
 - Tailwind v4 — use `@import "tailwindcss"` in CSS; no `tailwind.config.js` needed
-- Bun is the runtime and package manager for both apps (`bun add`, `bun run`, `bun --watch`)
+- Bun is the runtime and package manager for both apps (`bun add`, `bun run`, `bun --watch`), no npm

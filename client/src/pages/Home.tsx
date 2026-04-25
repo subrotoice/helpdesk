@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold">Welcome {session.user.name}</h1>
+      <h1 className="text-3xl font-semibold">Welcome {session?.user.name}</h1>
       <p className="text-gray-600">AI-powered ticket management system.</p>
       <div className="rounded-lg border bg-white p-4">
         <h2 className="mb-2 text-sm font-medium text-gray-500">

@@ -1,33 +1,44 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { signIn, useSession } from "../lib/auth-client";
+
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
   const { data: session } = useSession();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   useEffect(() => {
     if (session) navigate("/", { replace: true });
   }, [session, navigate]);
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    await signIn.email(
-      { email, password },
-      {
-        onError: (ctx) => {
-          setError(ctx.error.message ?? "Sign in failed");
-          setSubmitting(false);
-        },
+  const onSubmit = async (values: LoginValues) => {
+    await signIn.email(values, {
+      onError: (ctx) => {
+        setError("root", {
+          message: ctx.error.message ?? "Sign in failed",
+        });
       },
-    );
-  }
+    });
+  };
 
   return (
     <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
@@ -36,7 +47,7 @@ export default function Login() {
         <p className="mb-6 text-sm text-gray-600">
           Sign in to the ticket management dashboard.
         </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="space-y-1">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
@@ -45,11 +56,17 @@ export default function Login() {
               id="email"
               type="email"
               autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              {...register("email")}
+              aria-invalid={errors.email ? true : undefined}
+              className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none ${
+                errors.email
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-300 focus:border-gray-900"
+              }`}
             />
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email.message}</p>
+            )}
           </div>
           <div className="space-y-1">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -59,19 +76,27 @@ export default function Login() {
               id="password"
               type="password"
               autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+              {...register("password")}
+              aria-invalid={errors.password ? true : undefined}
+              className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none ${
+                errors.password
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-gray-300 focus:border-gray-900"
+              }`}
             />
+            {errors.password && (
+              <p className="text-sm text-red-600">{errors.password.message}</p>
+            )}
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {errors.root && (
+            <p className="text-sm text-red-600">{errors.root.message}</p>
+          )}
           <button
             type="submit"
-            disabled={submitting}
+            disabled={isSubmitting}
             className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? "Signing in…" : "Sign in"}
+            {isSubmitting ? "Signing in…" : "Sign in"}
           </button>
         </form>
       </div>

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { signOut, useSession } from "../lib/auth-client";
+import { getRole, signOut, useSession } from "../lib/auth-client";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -20,6 +20,14 @@ export default function Navbar() {
         >
           Tickets
         </Link>
+        {getRole(session.user) === "admin" && (
+          <Link
+            to="/users"
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            Users
+          </Link>
+        )}
         <div className="ml-auto flex items-center gap-4">
           <span className="text-sm text-gray-700">{session.user.name}</span>
           <button

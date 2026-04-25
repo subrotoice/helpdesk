@@ -33,7 +33,11 @@
       "Bash(bunx --bun shadcn@latest add form -y)",
       "Bash(bunx --bun shadcn@latest add form --force -y)",
       "Bash(bunx --bun shadcn@latest add -h)",
-      "Bash(bunx --bun shadcn@latest add form -y --overwrite)"
+      "Bash(bunx --bun shadcn@latest add form -y --overwrite)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(awk 'NR==1,/^export/' E:/Tutorials/helpdesk/client/node_modules/better-auth/dist/client/react/index.d.mts)",
+      "Bash(awk '/^declare /,/^export/' E:/Tutorials/helpdesk/client/node_modules/better-auth/dist/client/react/index.d.mts)",
+      "Bash(awk NR>=170,NR<=200 *)"
     ]
   }
 }

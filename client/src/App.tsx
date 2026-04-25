@@ -1,9 +1,11 @@
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
+import RequireAdmin from "./components/RequireAdmin";
 import RequireAuth from "./components/RequireAuth";
 import Home from "./pages/Home";
 import Tickets from "./pages/Tickets";
 import Login from "./pages/Login";
+import Users from "./pages/Users";
 
 function App() {
   return (
@@ -24,6 +26,14 @@ function App() {
             <RequireAuth>
               <Tickets />
             </RequireAuth>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <RequireAdmin>
+              <Users />
+            </RequireAdmin>
           }
         />
       </Routes>

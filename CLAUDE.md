@@ -56,15 +56,14 @@ The Vite dev server proxies `/api/*` → `http://localhost:4000`, so the client 
 
 ## Authentication
 
-Better Auth with email/password and database sessions (Prisma adapter, PostgreSQL).
+Better Auth, email/password, DB sessions (Prisma + PostgreSQL). Sign-up disabled — users created via `bun run seed` (reads `ADMIN_EMAIL`/`ADMIN_PASSWORD` from `server/.env`; creates or promotes to admin).
 
-- **Sign-up is disabled** (`disableSignUp: true` in `server/src/auth.ts`). Users are created via `bun run seed` in `server/`, which reads `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `server/.env` and creates a new admin or promotes an existing user.
-- **Roles**: Prisma enum `UserRole = admin | agent`, default `agent`. Declared as a Better Auth additional field with `input: false`, so clients cannot self-assign a role on sign-up — role changes go through the server (e.g. the seed script).
-- **Server mount**: `server/src/index.ts` mounts all Better Auth routes at `/api/auth/*splat` via `toNodeHandler(auth)`. The auth handler is mounted **before** `express.json()` — keep that order, the handler reads the raw body itself. CORS uses `credentials: true` so the session cookie travels cross-origin in dev.
-- **Server-side guard**: `requireAuth` middleware in `server/src/require-auth.ts` resolves the session with `auth.api.getSession({ headers: fromNodeHeaders(req.headers) })`, returns `401` if absent, otherwise attaches it to `res.locals.session`. Apply per-route (see `/api/me` in `server/src/index.ts`).
-- **Client**: `authClient = createAuthClient()` in `client/src/lib/auth-client.ts` exports `signIn`, `signOut`, `useSession`. Route guard is `client/src/components/RequireAuth.tsx` — returns `null` while `isPending`, redirects to `/login` when there's no session.
-- **Trusted origins** come from `CLIENT_ORIGIN` (defaults to `http://localhost:5173`); set this in production to the deployed client URL.
-- **Env vars** (see `server/.env.example`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_ORIGIN`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+- **Roles** (`admin` | `agent`, default `agent`) — Prisma enum + Better Auth additional field with `input: false` (clients can't self-assign).
+- **Server mount order matters**: `toNodeHandler(auth)` at `/api/auth/*splat` is mounted **before** `express.json()` — the auth handler reads the raw body. `requireAuth` (`server/src/require-auth.ts`) attaches the session to `res.locals.session` or returns 401.
+- **Server-side admin gating doesn't exist yet.** `requireAuth` checks session only; any admin-only API route must add its own role check. `RequireAdmin` on the client is UX, not a security boundary.
+- **Client** (`client/src/lib/auth-client.ts`): `createAuthClient` is configured with `inferAdditionalFields({ user: { role: { type: "string" } } } as const)` — the **`as const` is required**, without it the literal widens and `role` silently drops from the typed user. Exports: `signIn`, `signOut`, `useSession`, `getRole(user)`. Guards: `RequireAuth`, `RequireAdmin`.
+- **Always use `getRole(user)`, never `session.user.role`** at call sites. The helper hides a `as unknown as { role: string }` cast that works around a sticky VS Code Problems-panel phantom diagnostic; `tsc -b` is unaffected. Don't refactor it away.
+- **Env vars** (`server/.env.example`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_ORIGIN` (default `http://localhost:5173` — set to deployed client URL in prod), `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
 
 ---
 

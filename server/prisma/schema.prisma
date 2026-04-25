@@ -14,6 +14,7 @@ model User {
   email         String
   emailVerified Boolean   @default(false)
   image         String?
+  role          UserRole  @default(agent)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -21,6 +22,11 @@ model User {
 
   @@unique([email])
   @@map("user")
+}
+
+enum UserRole {
+  admin
+  agent
 }
 
 model Session {

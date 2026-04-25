@@ -22,7 +22,8 @@
       "Bash(curl -s -i http://localhost:4000/api/auth/get-session -b /tmp/cookies.txt)",
       "Bash(curl -s -i -X POST http://localhost:4000/api/auth/sign-out -b /tmp/cookies.txt)",
       "Bash(curl -s -i -X POST http://localhost:4000/api/auth/sign-in/email -H 'Content-Type: application/json' -c /tmp/cookies.txt -d '{\"email\":\"test@example.com\",\"password\":\"testpass123\"}')",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(bunx prisma *)"
     ]
   }
 }

@@ -58,14 +58,6 @@ The Vite dev server proxies `/api/*` → `http://localhost:4000`, so the client 
 
 **Always use context7 before writing code that touches a library, framework, or SDK.** Training data may be outdated — context7 provides current docs.
 
-Workflow:
-
-1. Call `mcp__context7__resolve-library-id` with the library name to get its context7 ID
-2. Call `mcp__context7__query-docs` with that ID and a specific topic to fetch relevant docs
-3. Write the code based on what the docs say, not on assumptions
-
-Use context7 for: React Router, Prisma, Express, Tailwind CSS, Anthropic SDK, Bun APIs, Resend, Vite config, and any other library in the stack.
-
 ---
 
 ## Conventions

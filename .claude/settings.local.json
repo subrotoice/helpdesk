@@ -27,7 +27,13 @@
       "Bash(xargs grep *)",
       "mcp__ide__getDiagnostics",
       "Bash(bunx tsc *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(bunx --bun shadcn@latest init -t vite -b radix -y --css-variables)",
+      "Bash(bunx --bun shadcn@latest add card input label form -y)",
+      "Bash(bunx --bun shadcn@latest add form -y)",
+      "Bash(bunx --bun shadcn@latest add form --force -y)",
+      "Bash(bunx --bun shadcn@latest add -h)",
+      "Bash(bunx --bun shadcn@latest add form -y --overwrite)"
     ]
   }
 }

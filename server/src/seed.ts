@@ -13,6 +13,14 @@ if (!email || !password) {
   process.exit(1);
 }
 
+const MIN_PASSWORD_LENGTH = 16;
+if (password.length < MIN_PASSWORD_LENGTH) {
+  console.error(
+    `ADMIN_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters. Generate one with: node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))"`,
+  );
+  process.exit(1);
+}
+
 async function main() {
   const ctx = await auth.$context;
 

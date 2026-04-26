@@ -17,3 +17,18 @@ export async function requireAuth(
   res.locals.session = session;
   next();
 }
+
+export function requireAdmin(
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const session = res.locals.session as
+    | { user: { role?: string } }
+    | undefined;
+  if (session?.user?.role !== "admin") {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  next();
+}

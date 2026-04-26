@@ -37,7 +37,12 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(awk 'NR==1,/^export/' E:/Tutorials/helpdesk/client/node_modules/better-auth/dist/client/react/index.d.mts)",
       "Bash(awk '/^declare /,/^export/' E:/Tutorials/helpdesk/client/node_modules/better-auth/dist/client/react/index.d.mts)",
-      "Bash(awk NR>=170,NR<=200 *)"
+      "Bash(awk NR>=170,NR<=200 *)",
+      "Bash(git -C \"E:/Tutorials/helpdesk\" log --oneline --all)",
+      "Bash(git -C \"E:/Tutorials/helpdesk\" ls-files)",
+      "Bash(git -C \"E:/Tutorials/helpdesk\" show 87a3396 --name-only)",
+      "Bash(git *)",
+      "Bash(node *)"
     ]
   }
 }

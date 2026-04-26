@@ -19,4 +19,12 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [process.env.CLIENT_ORIGIN ?? "http://localhost:5173"],
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+    },
+  },
 });

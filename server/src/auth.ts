@@ -20,7 +20,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [process.env.CLIENT_ORIGIN ?? "http://localhost:5173"],
   rateLimit: {
-    enabled: true,
+    enabled: process.env.NODE_ENV === "production",
     window: 60,
     max: 100,
     customRules: {

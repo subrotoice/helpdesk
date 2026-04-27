@@ -42,7 +42,11 @@
       "Bash(git -C \"E:/Tutorials/helpdesk\" ls-files)",
       "Bash(git -C \"E:/Tutorials/helpdesk\" show 87a3396 --name-only)",
       "Bash(git *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Yes. and enable rate limiting only in production environment\" bun run *)",
+      "Bash(bunx playwright *)",
+      "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory//**)",
+      "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory/**)"
     ]
   }
 }

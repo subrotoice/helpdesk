@@ -25,7 +25,15 @@ export default defineConfig({
   },
   globalSetup: "./tests/global-setup.ts",
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "auth setup", testMatch: /auth\.setup\.ts/ },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "tests/.auth/admin.json",
+      },
+      dependencies: ["auth setup"],
+    },
   ],
   webServer: [
     {

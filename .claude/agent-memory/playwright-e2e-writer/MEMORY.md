@@ -1,0 +1,5 @@
+- [Auth test setup pattern](project_auth_setup.md) — setup project uses `auth.$context` adapter to create agent; UI login saves storageState per role to `tests/.auth/`.
+- [Route map and roles](project_routes_and_roles.md) — `/login` public; `/`, `/tickets` require auth; `/users` requires admin. Guards redirect to `/login` or `/` respectively.
+- [Locators verified against source](project_locators.md) — Email/Password via getByLabel; submit via getByRole button; FieldError is role=alert; root error is `p.text-destructive`; sign-out is plain `<button>` not shadcn Button.
+- [API direct calls use port 4000](project_api_direct.md) — Vite proxy only works in the browser; Playwright APIRequestContext must use `http://localhost:4000` directly.
+- [/api/me response shape is scoped](project_api_me_shape.md) — returns exactly `{id, name, email, role}` — no password/createdAt/image. Assert key set as a security property.

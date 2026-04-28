@@ -46,7 +46,9 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Yes. and enable rate limiting only in production environment\" bun run *)",
       "Bash(bunx playwright *)",
       "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory//**)",
-      "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory/**)"
+      "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory/**)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bunx playwright test tests/auth/)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bunx playwright test tests/auth/ --reporter=line)"
     ]
   }
 }

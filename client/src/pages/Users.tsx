@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -42,9 +43,8 @@ export default function Users() {
       <p className="text-gray-600">All accounts in the system.</p>
 
       {isError && <p className="text-red-600">Error: {error.message}</p>}
-      {isPending && <p className="text-gray-400">Loading…</p>}
 
-      {users && (
+      {(isPending || users) && (
         <div className="rounded-lg border bg-white">
           <Table>
             <TableHeader>
@@ -57,7 +57,27 @@ export default function Users() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((u) => (
+              {isPending &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={`skeleton-${i}`}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-48" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-14 rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-10" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              {users?.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell className="font-medium">{u.name}</TableCell>
                   <TableCell>{u.email}</TableCell>
@@ -78,7 +98,7 @@ export default function Users() {
                   </TableCell>
                 </TableRow>
               ))}
-              {users.length === 0 && (
+              {users?.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-gray-500">
                     No users found.

@@ -52,7 +52,8 @@
       "Bash(bunx --bun shadcn@latest add table)",
       "Bash(kill %1 %2)",
       "Bash(pkill -f \"bun --watch\")",
-      "Bash(pkill -f \"vite\")"
+      "Bash(pkill -f \"vite\")",
+      "Bash(bunx --bun shadcn@latest add skeleton)"
     ]
   }
 }

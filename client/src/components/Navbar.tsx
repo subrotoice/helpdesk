@@ -10,7 +10,9 @@ export default function Navbar() {
   return (
     <nav className="border-b bg-white">
       <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-        <span className="font-semibold">Ticket Management</span>
+        <Link to="/" className="font-semibold">
+          Ticket Management
+        </Link>
         <Link to="/" className="text-sm text-gray-600 hover:text-gray-900">
           Home
         </Link>

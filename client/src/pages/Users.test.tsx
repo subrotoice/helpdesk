@@ -1,11 +1,12 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import Users from "./Users";
 import { renderWithQuery } from "@/test/renderWithQuery";
 
 vi.mock("axios", () => ({
-  default: { get: vi.fn() },
+  default: { get: vi.fn(), post: vi.fn() },
 }));
 
 const mockedGet = vi.mocked(axios.get);
@@ -115,5 +116,64 @@ describe("Users page", () => {
     expect(
       await screen.findByText(/error: network down/i),
     ).toBeInTheDocument();
+  });
+});
+
+describe("Create user dialog", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function setup() {
+    mockedGet.mockResolvedValue({ data: { users: [] } });
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    renderUsers();
+    return user;
+  }
+
+  it("is hidden by default", () => {
+    setup();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("opens when the Create user button is clicked", async () => {
+    const user = setup();
+
+    await user.click(screen.getByRole("button", { name: /create user/i }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: /create user/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("closes when Escape is pressed", async () => {
+    const user = setup();
+
+    await user.click(screen.getByRole("button", { name: /create user/i }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("closes when clicking outside the dialog", async () => {
+    const user = setup();
+
+    await user.click(screen.getByRole("button", { name: /create user/i }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    const overlay = document.querySelector(
+      '[data-slot="dialog-overlay"]',
+    ) as HTMLElement | null;
+    expect(overlay).not.toBeNull();
+    await user.click(overlay!);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
   });
 });

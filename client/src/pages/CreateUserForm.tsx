@@ -34,7 +34,7 @@ export default function CreateUserForm({ onSuccess, onCancel }: Props) {
     control,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<CreateUserValues>({
     resolver: zodResolver(createUserSchema),
     defaultValues: { name: "", email: "", password: "" },
@@ -59,6 +59,7 @@ export default function CreateUserForm({ onSuccess, onCancel }: Props) {
   });
 
   const onSubmit = (values: CreateUserValues) => mutation.mutate(values);
+  const isSubmitting = mutation.isPending;
 
   return (
     <>

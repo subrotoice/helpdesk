@@ -33,9 +33,31 @@ Better Auth, email/password, DB sessions. Sign-up disabled — users seeded via 
 
 ## Testing
 
+### E2E (Playwright)
+
 Delegate ALL E2E test work — writing specs, running them, modifying `playwright.config.ts` or `tests/global-setup.ts` — to the `playwright-e2e-writer` agent. Don't write Playwright tests inline.
 
 For quick test-related questions ("what command runs the tests?"), read `.claude/agents/playwright-e2e-writer.md` directly instead of spawning the agent.
+
+### Component (Vitest + React Testing Library)
+
+Stack: Vitest 4 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`. Config lives in `client/vite.config.ts` under the `test` block (globals on, setup file at `client/src/test/setup.ts`).
+
+Commands (run from `client/`):
+
+```bash
+bun run test              # vitest run — all tests, single pass
+bun run test:watch        # watch mode
+bun run test:components   # vitest run .test.tsx — component tests only (substring filter, NOT a glob)
+```
+
+Conventions:
+
+- Co-locate tests next to source: `Foo.tsx` → `Foo.test.tsx`. The `.tsx` suffix is what `test:components` filters on.
+- Wrap components that use TanStack Query in a fresh `QueryClient` per render via `renderWithQuery` (`@/test/renderWithQuery`) — it sets `retry: false` so error cases resolve fast.
+- Mock axios at the module level: `vi.mock("axios", () => ({ default: { get: vi.fn() } }))`, then drive each case with `vi.mocked(axios.get).mockResolvedValue(...)` / `.mockRejectedValue(...)`. Call `vi.clearAllMocks()` in `afterEach`.
+- Prefer role/text queries over class/structure. Use `within(row)` to scope assertions to a specific table row when text repeats across rows.
+- Canonical example: `client/src/pages/Users.test.tsx`.
 
 ---
 

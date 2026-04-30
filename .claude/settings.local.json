@@ -48,7 +48,11 @@
       "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory//**)",
       "Read(//c/Users/WALTON/.claude/projects/E--Tutorials-helpdesk/memory/**)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bunx playwright test tests/auth/)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bunx playwright test tests/auth/ --reporter=line)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bunx playwright test tests/auth/ --reporter=line)",
+      "Bash(bunx --bun shadcn@latest add table)",
+      "Bash(kill %1 %2)",
+      "Bash(pkill -f \"bun --watch\")",
+      "Bash(pkill -f \"vite\")"
     ]
   }
 }

@@ -2,7 +2,7 @@
 
 Ticket management system: AI-assisted classification, replies, and routing for support tickets. Full scope in `project-scope.md`; phased plan in `implementation-plan.md`.
 
-**Stack:** React 19 + Vite (`client/`, port 5173) · Express 5 + Bun (`server/`, port 4000) · PostgreSQL + Prisma · Better Auth · Anthropic SDK · Resend.
+**Stack:** React 19 + Vite (`client/`, port 5173) · Express 5 + Bun (`server/`, port 4000) · PostgreSQL + Prisma · Better Auth · TanStack Query + axios (client data fetching) · Anthropic SDK · Resend.
 
 ---
 
@@ -47,4 +47,5 @@ For quick test-related questions ("what command runs the tests?"), read `.claude
 - Tailwind v4 — `@import "tailwindcss"` in CSS; no `tailwind.config.js`.
 - Bun is the runtime and package manager (`bun add`/`bun run`/`bun --watch`), no npm.
 - shadcn/ui — install with `bunx --bun shadcn@latest add <name>`. Radix-nova preset uses `Field`/`FieldGroup`/`FieldLabel`/`FieldError` (from `@/components/ui/field`) — no `Form` component. Wire RHF via `Controller` with `data-invalid={fieldState.invalid}` on `Field` and `aria-invalid` on the input. Canonical example: `client/src/pages/Login.tsx`.
+- Use TanStack React Query ('useQuery', 'useMutation') for server state management (not 'useEffect' + 'useState')
 - Path alias `@/*` → `client/src/*` (set in `client/tsconfig.json`, `client/tsconfig.app.json`, `client/vite.config.ts`). TS 6 deprecates `baseUrl`, so `paths` is used alone.

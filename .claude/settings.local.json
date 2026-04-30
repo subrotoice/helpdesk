@@ -53,7 +53,8 @@
       "Bash(kill %1 %2)",
       "Bash(pkill -f \"bun --watch\")",
       "Bash(pkill -f \"vite\")",
-      "Bash(bunx --bun shadcn@latest add skeleton)"
+      "Bash(bunx --bun shadcn@latest add skeleton)",
+      "Bash(bunx --bun shadcn@latest add dialog --yes)"
     ]
   }
 }

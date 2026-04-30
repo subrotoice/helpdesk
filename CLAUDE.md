@@ -69,5 +69,6 @@ Conventions:
 - Tailwind v4 — `@import "tailwindcss"` in CSS; no `tailwind.config.js`.
 - Bun is the runtime and package manager (`bun add`/`bun run`/`bun --watch`), no npm.
 - shadcn/ui — install with `bunx --bun shadcn@latest add <name>`. Radix-nova preset uses `Field`/`FieldGroup`/`FieldLabel`/`FieldError` (from `@/components/ui/field`) — no `Form` component. Wire RHF via `Controller` with `data-invalid={fieldState.invalid}` on `Field` and `aria-invalid` on the input. Canonical example: `client/src/pages/Login.tsx`.
+- Forms — use `react-hook-form` + `zod` via `zodResolver(schema)`. Define a single zod schema, derive types with `z.infer`, surface server errors via `setError("root", ...)`. Mirror the schema server-side and validate with `safeParse` returning `{ error: "ValidationError", issues: ... }` on 400. Canonical examples: `client/src/pages/Login.tsx` (entry-point form), `client/src/pages/CreateUserDialog.tsx` (mutation dialog with `useMutation`), `server/src/users.ts` (server-side mirror).
 - Use TanStack React Query ('useQuery', 'useMutation') for server state management (not 'useEffect' + 'useState')
 - Path alias `@/*` → `client/src/*` (set in `client/tsconfig.json`, `client/tsconfig.app.json`, `client/vite.config.ts`). TS 6 deprecates `baseUrl`, so `paths` is used alone.

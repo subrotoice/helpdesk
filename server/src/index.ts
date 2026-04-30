@@ -3,8 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
-import { requireAuth, requireAdmin } from "./require-auth";
-import { db } from "./db";
+import { usersRouter } from "./users";
 
 if (process.env.NODE_ENV === "production" && !process.env.CLIENT_ORIGIN) {
   throw new Error("CLIENT_ORIGIN must be set in production");
@@ -30,30 +29,7 @@ api.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", service: "ticket-management-server Subroto 2" });
 });
 
-api.get("/me", requireAuth, (_req: Request, res: Response) => {
-  const { id, name, email, role } = res.locals.session.user;
-  res.json({ id, name, email, role });
-});
-
-api.get(
-  "/users",
-  requireAuth,
-  requireAdmin,
-  async (_req: Request, res: Response) => {
-    const users = await db.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json({ users });
-  },
-);
+api.use(usersRouter);
 
 app.use("/api", api);
 

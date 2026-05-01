@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { getRole, signOut, useSession } from "../lib/auth-client";
+import { UserRole } from "../lib/roles";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function Navbar() {
         >
           Tickets
         </Link>
-        {getRole(session.user) === "admin" && (
+        {getRole(session.user) === UserRole.admin && (
           <Link
             to="/users"
             className="text-sm text-gray-600 hover:text-gray-900"

@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import type { UserRole } from "./roles";
 
 export const authClient = createAuthClient({
   plugins: [
@@ -18,5 +19,5 @@ type SessionUser = NonNullable<
   ReturnType<typeof authClient.useSession>["data"]
 >["user"];
 
-export const getRole = (user: SessionUser): string =>
-  (user as unknown as { role: string }).role;
+export const getRole = (user: SessionUser): UserRole =>
+  (user as unknown as { role: UserRole }).role;

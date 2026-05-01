@@ -1,6 +1,7 @@
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserRole } from "@/lib/roles";
 import {
   Table,
   TableBody,
@@ -14,7 +15,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "agent";
+  role: UserRole;
   emailVerified: boolean;
   createdAt: string;
 };
@@ -23,9 +24,10 @@ type Props = {
   users: User[] | undefined;
   isPending: boolean;
   onEdit?: (user: User) => void;
+  onDelete?: (user: User) => void;
 };
 
-export default function UsersTable({ users, isPending, onEdit }: Props) {
+export default function UsersTable({ users, isPending, onEdit, onDelete }: Props) {
   return (
     <div className="rounded-lg border bg-white">
       <Table>
@@ -36,7 +38,7 @@ export default function UsersTable({ users, isPending, onEdit }: Props) {
             <TableHead>Role</TableHead>
             <TableHead>Verified</TableHead>
             <TableHead>Created</TableHead>
-            <TableHead className="w-12">Actions</TableHead>
+            <TableHead className="w-20">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,7 +60,8 @@ export default function UsersTable({ users, isPending, onEdit }: Props) {
                 <TableCell>
                   <Skeleton className="h-4 w-20" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="flex gap-1">
+                  <Skeleton className="h-7 w-7 rounded-md" />
                   <Skeleton className="h-7 w-7 rounded-md" />
                 </TableCell>
               </TableRow>
@@ -70,7 +73,7 @@ export default function UsersTable({ users, isPending, onEdit }: Props) {
               <TableCell>
                 <span
                   className={
-                    u.role === "admin"
+                    u.role === UserRole.admin
                       ? "rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
                       : "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700"
                   }
@@ -82,7 +85,7 @@ export default function UsersTable({ users, isPending, onEdit }: Props) {
               <TableCell className="text-gray-600">
                 {new Date(u.createdAt).toLocaleDateString()}
               </TableCell>
-              <TableCell>
+              <TableCell className="flex gap-1">
                 <Button
                   variant="ghost"
                   size="icon-sm"
@@ -91,6 +94,16 @@ export default function UsersTable({ users, isPending, onEdit }: Props) {
                 >
                   <Pencil />
                 </Button>
+                {u.role !== UserRole.admin && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Delete ${u.name}`}
+                    onClick={() => onDelete?.(u)}
+                  >
+                    <Trash2 className="text-red-500" />
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

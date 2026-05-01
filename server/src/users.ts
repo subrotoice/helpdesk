@@ -56,6 +56,7 @@ usersRouter.get(
   requireAdmin,
   async (_req: Request, res: Response) => {
     const users = await db.user.findMany({
+      where: { deletedAt: null },
       select: userSelect,
       orderBy: { createdAt: "desc" },
     });
@@ -154,5 +155,30 @@ usersRouter.patch(
       select: userSelect,
     });
     res.json({ user });
+  },
+);
+
+usersRouter.delete(
+  "/users/:id",
+  requireAuth,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    const id = String(req.params.id);
+    const user = await db.user.findUnique({ where: { id } });
+
+    if (!user || user.deletedAt !== null) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    if (user.role === UserRole.admin) {
+      res.status(403).json({ error: "Admin accounts cannot be deleted" });
+      return;
+    }
+
+    await db.$transaction([
+      db.session.deleteMany({ where: { userId: id } }),
+      db.user.update({ where: { id }, data: { deletedAt: new Date() } }),
+    ]);
+    res.status(204).end();
   },
 );

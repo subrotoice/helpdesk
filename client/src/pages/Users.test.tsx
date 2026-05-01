@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import Users from "./Users";
 import { renderWithQuery } from "@/test/renderWithQuery";
+import { UserRole } from "@/lib/roles";
 
 vi.mock("axios", () => ({
   default: { get: vi.fn(), post: vi.fn(), patch: vi.fn() },
@@ -20,7 +21,7 @@ const sampleUsers = [
     id: "1",
     name: "Alice Admin",
     email: "alice@example.com",
-    role: "admin" as const,
+    role: UserRole.admin,
     emailVerified: true,
     createdAt: "2026-01-15T10:00:00Z",
   },
@@ -28,7 +29,7 @@ const sampleUsers = [
     id: "2",
     name: "Bob Agent",
     email: "bob@example.com",
-    role: "agent" as const,
+    role: UserRole.agent,
     emailVerified: false,
     createdAt: "2026-02-20T10:00:00Z",
   },
@@ -95,8 +96,8 @@ describe("Users page", () => {
     mockedGet.mockResolvedValue({ data: { users: sampleUsers } });
     renderUsers();
 
-    const adminBadge = await screen.findByText("admin");
-    const agentBadge = screen.getByText("agent");
+    const adminBadge = await screen.findByText(UserRole.admin);
+    const agentBadge = screen.getByText(UserRole.agent);
 
     expect(adminBadge).toHaveClass("bg-blue-100", "text-blue-800");
     expect(agentBadge).toHaveClass("bg-gray-100", "text-gray-700");
@@ -216,5 +217,39 @@ describe("Edit user", () => {
     expect(
       within(dialog).getByRole("button", { name: /^save changes$/i }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("Delete user", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders a delete button for agent rows but not for admin rows", async () => {
+    mockedGet.mockResolvedValue({ data: { users: sampleUsers } });
+    renderUsers();
+
+    expect(
+      await screen.findByRole("button", { name: /delete bob agent/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /delete alice admin/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("clicking delete opens the confirmation dialog with the user's name", async () => {
+    mockedGet.mockResolvedValue({ data: { users: sampleUsers } });
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    renderUsers();
+
+    await user.click(
+      await screen.findByRole("button", { name: /delete bob agent/i }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: /delete user/i }),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText(/bob agent/i)).toBeInTheDocument();
   });
 });

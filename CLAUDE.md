@@ -21,7 +21,7 @@ Vite proxies `/api/*` → `http://localhost:4000` (no CORS in dev). For E2E comm
 
 Better Auth, email/password, DB sessions. Sign-up disabled — users seeded via `bun run seed` (reads `ADMIN_EMAIL`/`ADMIN_PASSWORD` from `server/.env`).
 
-- **Roles** (`admin` | `agent`, default `agent`) — Prisma enum + Better Auth additional field with `input: false` (clients can't self-assign).
+- **Roles** (`admin` | `agent`, default `agent`) — Prisma enum + Better Auth additional field with `input: false` (clients can't self-assign). On the client, always use `UserRole` from `@/lib/roles` (a `const` object with `UserRole.admin`/`UserRole.agent`) — never compare against the raw strings `"admin"` or `"agent"`.
 - **Mount order matters**: `toNodeHandler(auth)` at `/api/auth/*splat` is mounted **before** `express.json()` — the auth handler reads the raw body.
 - **Auth middlewares** in `server/src/require-auth.ts`: `requireAuth` attaches session to `res.locals.session` or 401s; `requireAdmin` reads `res.locals.session.user.role` or 403s. Chain admin routes as `requireAuth, requireAdmin, handler`.
 - **Rate limiting** (`server/src/auth.ts`) is gated on `NODE_ENV === "production"` — global 100/60s, `/sign-in/email` 5/60s. Off in dev/test (Better Auth's `toNodeHandler` can't read the IP through Express). In prod the request must arrive with `x-forwarded-for` set or limits silently skip.

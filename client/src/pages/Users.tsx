@@ -3,6 +3,7 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import UserDialog from "./UserDialog";
+import DeleteUserDialog from "./DeleteUserDialog";
 import UsersTable, { type User } from "./UsersTable";
 
 async function fetchUsers(): Promise<User[]> {
@@ -16,6 +17,7 @@ type DialogState = { mode: "create" } | { mode: "edit"; user: User } | null;
 
 export default function Users() {
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const {
     data: users,
     isPending,
@@ -46,6 +48,14 @@ export default function Users() {
         user={dialog?.mode === "edit" ? dialog.user : undefined}
       />
 
+      <DeleteUserDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        user={deleteTarget}
+      />
+
       {isError && <p className="text-red-600">Error: {error.message}</p>}
 
       {(isPending || users) && (
@@ -53,6 +63,7 @@ export default function Users() {
           users={users}
           isPending={isPending}
           onEdit={(user) => setDialog({ mode: "edit", user })}
+          onDelete={(user) => setDeleteTarget(user)}
         />
       )}
     </section>

@@ -14,11 +14,34 @@ const userSelect = {
   createdAt: true,
 } as const;
 
-const createUserSchema = z.object({
+const userBaseSchema = z.object({
   name: z.string().trim().min(3, "Name must be at least 3 characters"),
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
+});
+
+const createUserSchema = userBaseSchema.extend({
   password: z.string().trim().min(6, "Password must be at least 6 characters"),
 });
+
+const updateUserSchema = userBaseSchema.extend({
+  password: z
+    .string()
+    .trim()
+    .min(6, "Password must be at least 6 characters")
+    .optional(),
+});
+
+function validate<T>(schema: z.ZodSchema<T>, body: unknown, res: Response): T | null {
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "ValidationError",
+      issues: parsed.error.flatten().fieldErrors,
+    });
+    return null;
+  }
+  return parsed.data;
+}
 
 export const usersRouter = Router();
 
@@ -45,16 +68,9 @@ usersRouter.post(
   requireAuth,
   requireAdmin,
   async (req: Request, res: Response) => {
-    const parsed = createUserSchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({
-        error: "ValidationError",
-        issues: parsed.error.flatten().fieldErrors,
-      });
-      return;
-    }
-
-    const { name, email, password } = parsed.data;
+    const data = validate(createUserSchema, req.body, res);
+    if (!data) return;
+    const { name, email, password } = data;
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) {
       res.status(409).json({ error: "Email already in use" });
@@ -90,5 +106,53 @@ usersRouter.post(
     });
 
     res.status(201).json({ user });
+  },
+);
+
+usersRouter.patch(
+  "/users/:id",
+  requireAuth,
+  requireAdmin,
+  async (req: Request, res: Response) => {
+    const data = validate(updateUserSchema, req.body, res);
+    if (!data) return;
+
+    const id = String(req.params.id);
+    const existing = await db.user.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const { name, email, password } = data;
+
+    if (email !== existing.email) {
+      const conflict = await db.user.findUnique({ where: { email } });
+      if (conflict && conflict.id !== id) {
+        res.status(409).json({ error: "Email already in use" });
+        return;
+      }
+    }
+
+    const now = new Date();
+    await db.user.update({
+      where: { id },
+      data: { name, email, updatedAt: now },
+    });
+
+    if (password) {
+      const ctx = await auth.$context;
+      const hashed = await ctx.password.hash(password);
+      await db.account.updateMany({
+        where: { userId: id, providerId: "credential" },
+        data: { password: hashed, updatedAt: now },
+      });
+    }
+
+    const user = await db.user.findUnique({
+      where: { id },
+      select: userSelect,
+    });
+    res.json({ user });
   },
 );

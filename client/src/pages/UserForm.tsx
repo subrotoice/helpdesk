@@ -20,28 +20,54 @@ export const createUserSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-export type CreateUserValues = z.infer<typeof createUserSchema>;
+export const editUserSchema = z.object({
+  name: z.string().trim().min(3, "Name must be at least 3 characters"),
+  email: z.string().trim().min(1, "Email is required").email("Enter a valid email"),
+  password: z
+    .string()
+    .refine(
+      (v) => v.length === 0 || v.length >= 6,
+      "Password must be at least 6 characters",
+    ),
+});
+
+export type UserFormValues = z.infer<typeof createUserSchema>;
 
 type Props = {
+  user?: { id: string; name: string; email: string };
   onSuccess: () => void;
   onCancel: () => void;
 };
 
-export default function CreateUserForm({ onSuccess, onCancel }: Props) {
+export default function UserForm({ user, onSuccess, onCancel }: Props) {
   const queryClient = useQueryClient();
+  const isEdit = user !== undefined;
 
   const {
     control,
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<CreateUserValues>({
-    resolver: zodResolver(createUserSchema),
-    defaultValues: { name: "", email: "", password: "" },
+  } = useForm<UserFormValues>({
+    resolver: zodResolver(isEdit ? editUserSchema : createUserSchema),
+    defaultValues: isEdit
+      ? { name: user.name, email: user.email, password: "" }
+      : { name: "", email: "", password: "" },
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: CreateUserValues) => {
+    mutationFn: async (values: UserFormValues) => {
+      if (isEdit) {
+        const payload: { name: string; email: string; password?: string } = {
+          name: values.name,
+          email: values.email,
+        };
+        if (values.password.length > 0) payload.password = values.password;
+        const res = await axios.patch(`/api/users/${user.id}`, payload, {
+          withCredentials: true,
+        });
+        return res.data;
+      }
       const res = await axios.post("/api/users", values, {
         withCredentials: true,
       });
@@ -52,18 +78,27 @@ export default function CreateUserForm({ onSuccess, onCancel }: Props) {
       onSuccess();
     },
     onError: (err: AxiosError<{ error?: string }>) => {
-      const message =
-        err.response?.data?.error ?? err.message ?? "Failed to create user";
-      setError("root", { message });
+      const fallback = isEdit
+        ? "Failed to save changes"
+        : "Failed to create user";
+      const message = err.response?.data?.error ?? err.message ?? fallback;
+      setError("root", { message: message || fallback });
     },
   });
 
-  const onSubmit = (values: CreateUserValues) => mutation.mutate(values);
+  const onSubmit = (values: UserFormValues) => mutation.mutate(values);
   const isSubmitting = mutation.isPending;
+
+  const submitIdle = isEdit ? "Save changes" : "Create user";
+  const submitPending = isEdit ? "Saving…" : "Creating…";
+  const passwordLabel = isEdit ? "New password (optional)" : "Password";
+  const passwordPlaceholder = isEdit
+    ? "Leave blank to keep current password"
+    : undefined;
 
   return (
     <>
-      <form id="create-user-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form id="user-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <FieldGroup>
           <Controller
             name="name"
@@ -109,12 +144,13 @@ export default function CreateUserForm({ onSuccess, onCancel }: Props) {
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <FieldLabel htmlFor={field.name}>{passwordLabel}</FieldLabel>
                 <Input
                   {...field}
                   id={field.name}
                   type="password"
                   autoComplete="new-password"
+                  placeholder={passwordPlaceholder}
                   aria-invalid={fieldState.invalid}
                 />
                 {fieldState.invalid && fieldState.error && (
@@ -138,9 +174,9 @@ export default function CreateUserForm({ onSuccess, onCancel }: Props) {
         >
           Cancel
         </Button>
-        <Button type="submit" form="create-user-form" disabled={isSubmitting}>
+        <Button type="submit" form="user-form" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="animate-spin" />}
-          {isSubmitting ? "Creating…" : "Create user"}
+          {isSubmitting ? submitPending : submitIdle}
         </Button>
       </DialogFooter>
     </>

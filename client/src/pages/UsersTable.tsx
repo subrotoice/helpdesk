@@ -1,3 +1,5 @@
+import { Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -20,9 +22,10 @@ export type User = {
 type Props = {
   users: User[] | undefined;
   isPending: boolean;
+  onEdit?: (user: User) => void;
 };
 
-export default function UsersTable({ users, isPending }: Props) {
+export default function UsersTable({ users, isPending, onEdit }: Props) {
   return (
     <div className="rounded-lg border bg-white">
       <Table>
@@ -33,6 +36,7 @@ export default function UsersTable({ users, isPending }: Props) {
             <TableHead>Role</TableHead>
             <TableHead>Verified</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead className="w-12">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -53,6 +57,9 @@ export default function UsersTable({ users, isPending }: Props) {
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-7 w-7 rounded-md" />
                 </TableCell>
               </TableRow>
             ))}
@@ -75,11 +82,21 @@ export default function UsersTable({ users, isPending }: Props) {
               <TableCell className="text-gray-600">
                 {new Date(u.createdAt).toLocaleDateString()}
               </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Edit ${u.name}`}
+                  onClick={() => onEdit?.(u)}
+                >
+                  <Pencil />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
           {users?.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-gray-500">
+              <TableCell colSpan={6} className="text-center text-gray-500">
                 No users found.
               </TableCell>
             </TableRow>

@@ -6,7 +6,7 @@ import Users from "./Users";
 import { renderWithQuery } from "@/test/renderWithQuery";
 
 vi.mock("axios", () => ({
-  default: { get: vi.fn(), post: vi.fn() },
+  default: { get: vi.fn(), post: vi.fn(), patch: vi.fn() },
 }));
 
 const mockedGet = vi.mocked(axios.get);
@@ -175,5 +175,46 @@ describe("Create user dialog", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
+  });
+});
+
+describe("Edit user", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders an edit button for each user row", async () => {
+    mockedGet.mockResolvedValue({ data: { users: sampleUsers } });
+    renderUsers();
+
+    expect(
+      await screen.findByRole("button", { name: /edit alice admin/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /edit bob agent/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the dialog prefilled with the user's data", async () => {
+    mockedGet.mockResolvedValue({ data: { users: sampleUsers } });
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    renderUsers();
+
+    await user.click(
+      await screen.findByRole("button", { name: /edit alice admin/i }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: /edit user/i }),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/^name$/i)).toHaveValue("Alice Admin");
+    expect(within(dialog).getByLabelText(/^email$/i)).toHaveValue(
+      "alice@example.com",
+    );
+    expect(within(dialog).getByLabelText(/new password/i)).toHaveValue("");
+    expect(
+      within(dialog).getByRole("button", { name: /^save changes$/i }),
+    ).toBeInTheDocument();
   });
 });

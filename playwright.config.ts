@@ -20,7 +20,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: "http://localhost:5174",
     trace: "on-first-retry",
   },
   globalSetup: "./tests/global-setup.ts",
@@ -39,14 +39,14 @@ export default defineConfig({
     {
       command: "bun src/index.ts",
       cwd: "./server",
-      url: "http://localhost:4000/api/health",
+      url: "http://localhost:4001/api/health",
       reuseExistingServer: REUSE,
       timeout: 60_000,
     },
     {
-      command: "bun run dev",
+      command: "bun run dev --port 5174",
       cwd: "./client",
-      url: "http://localhost:5173",
+      url: "http://localhost:5174",
       reuseExistingServer: REUSE,
       timeout: 60_000,
     },

@@ -15,6 +15,8 @@ cd client && bun run dev    # Vite HMR
 
 Vite proxies `/api/*` → `http://localhost:4000` (no CORS in dev). For E2E commands and infrastructure, see Testing.
 
+**Test ports:** server **4001**, client **5174** (set in `server/.env.test`). Specs that call the API directly must use `` `http://localhost:${process.env.PORT ?? 4000}` `` — never hardcode `4000`.
+
 ---
 
 ## Authentication

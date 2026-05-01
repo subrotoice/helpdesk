@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 // All tests start as authenticated admin.
 test.use({ storageState: "tests/.auth/admin.json" });
 
-const API = "http://localhost:4000";
+const API = `http://localhost:${process.env.PORT ?? 4000}`;
 
 test.describe("Session persistence", () => {
   test("reloading the page keeps the user authenticated and on /", async ({

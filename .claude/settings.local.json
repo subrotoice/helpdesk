@@ -55,7 +55,8 @@
       "Bash(pkill -f \"vite\")",
       "Bash(bunx --bun shadcn@latest add skeleton)",
       "Bash(bunx --bun shadcn@latest add dialog --yes)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_AM_SURE bunx prisma *)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_AM_SURE bunx prisma *)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bun test:e2e *)"
     ]
   }
 }

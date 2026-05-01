@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
 // auth. Per-test browser contexts created below set their own storageState.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-const API = "http://localhost:4000";
+const API = `http://localhost:${process.env.PORT ?? 4000}`;
 
 // ── sign-in endpoint ───────────────────────────────────────────────────────
 

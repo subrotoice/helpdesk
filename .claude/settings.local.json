@@ -58,7 +58,9 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_AM_SURE bunx prisma *)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bun test:e2e *)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_KNOW_WHAT_I_AM_DOING bunx prisma migrate dev --name add_ticket_model)",
-      "Bash(kill %1)"
+      "Bash(kill %1)",
+      "Bash(xargs ls *)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" bunx playwright *)"
     ]
   }
 }

@@ -1,4 +1,5 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import Tickets from "./Tickets";
@@ -56,12 +57,38 @@ describe("Tickets page", () => {
     ).toBeInTheDocument();
   });
 
-  it("requests /api/tickets with credentials", () => {
+  it("requests /api/tickets with default sort params", () => {
     mockedGet.mockReturnValue(new Promise(() => {}));
     renderTickets();
 
     expect(mockedGet).toHaveBeenCalledWith("/api/tickets", {
       withCredentials: true,
+      params: { sortBy: "createdAt", order: "desc" },
+    });
+  });
+
+  it("renders a sort button for each column header", async () => {
+    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    renderTickets();
+    await screen.findByText("Cannot login");
+    expect(screen.getAllByRole("button").length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("refetches with new sort params when Subject header is clicked", async () => {
+    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    const user = userEvent.setup();
+    renderTickets();
+    await screen.findByText("Cannot login");
+
+    const buttons = screen.getAllByRole("button");
+    const subjectBtn = buttons.find((b) => b.textContent?.includes("Subject"))!;
+    await user.click(subjectBtn);
+
+    await waitFor(() => {
+      expect(mockedGet).toHaveBeenCalledWith("/api/tickets", {
+        withCredentials: true,
+        params: { sortBy: "subject", order: "asc" },
+      });
     });
   });
 

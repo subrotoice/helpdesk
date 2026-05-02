@@ -4,6 +4,7 @@ import "dotenv/config";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
 import { usersRouter } from "./users";
+import { ticketsRouter } from "./tickets";
 import { webhooksRouter } from "./webhooks";
 
 if (process.env.NODE_ENV === "production" && !process.env.CLIENT_ORIGIN) {
@@ -31,6 +32,7 @@ api.get("/health", (_req: Request, res: Response) => {
 });
 
 api.use(usersRouter);
+api.use(ticketsRouter);
 
 app.use("/webhooks", webhooksRouter);
 

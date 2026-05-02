@@ -20,6 +20,7 @@ model User {
   deletedAt     DateTime?
   sessions      Session[]
   accounts      Account[]
+  tickets       Ticket[]
 
   @@unique([email])
   @@map("user")
@@ -28,6 +29,32 @@ model User {
 enum UserRole {
   admin
   agent
+}
+
+enum TicketStatus {
+  open
+  inProgress
+  closed
+}
+
+model Ticket {
+  id           Int          @id @default(autoincrement())
+  subject      String
+  body         String
+  senderEmail  String
+  senderName   String
+  status       TicketStatus @default(open)
+  category     String?
+  assignedToId String?
+  assignedTo   User?        @relation(fields: [assignedToId], references: [id])
+  messageId    String       @unique
+  inReplyTo    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([senderEmail])
+  @@index([assignedToId])
+  @@map("ticket")
 }
 
 model Session {

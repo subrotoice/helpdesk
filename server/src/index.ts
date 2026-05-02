@@ -4,6 +4,7 @@ import "dotenv/config";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
 import { usersRouter } from "./users";
+import { webhooksRouter } from "./webhooks";
 
 if (process.env.NODE_ENV === "production" && !process.env.CLIENT_ORIGIN) {
   throw new Error("CLIENT_ORIGIN must be set in production");
@@ -30,6 +31,8 @@ api.get("/health", (_req: Request, res: Response) => {
 });
 
 api.use(usersRouter);
+
+app.use("/webhooks", webhooksRouter);
 
 app.use("/api", api);
 

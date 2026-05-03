@@ -2,10 +2,9 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
-import Tickets from "./Tickets";
+import TicketsPage from "./TicketsPage";
 import { type Ticket } from "./TicketsTable";
 import { renderWithQuery } from "@/test/renderWithQuery";
-import { TicketStatus } from "@/lib/ticket-status";
 
 vi.mock("axios", () => ({
   default: { get: vi.fn() },
@@ -13,8 +12,24 @@ vi.mock("axios", () => ({
 
 const mockedGet = vi.mocked(axios.get);
 
+function mockEndpoints(
+  tickets: Ticket[] | "pending" | "error",
+  agents: { id: string; name: string }[] = [],
+) {
+  mockedGet.mockImplementation((url: string) => {
+    if (url === "/api/agents")
+      return Promise.resolve({ data: { agents } });
+    if (url === "/api/tickets") {
+      if (tickets === "pending") return new Promise(() => {});
+      if (tickets === "error") return Promise.reject(new Error("Network down"));
+      return Promise.resolve({ data: { tickets } });
+    }
+    return Promise.reject(new Error(`Unexpected GET: ${url}`));
+  });
+}
+
 function renderTickets() {
-  return renderWithQuery(<Tickets />);
+  return renderWithQuery(<TicketsPage />);
 }
 
 const sampleTickets: Ticket[] = [
@@ -23,7 +38,7 @@ const sampleTickets: Ticket[] = [
     subject: "Cannot login",
     senderName: "Alice Smith",
     senderEmail: "alice@example.com",
-    status: TicketStatus.open,
+    status: "open",
     category: "Auth",
     createdAt: "2024-01-15T10:00:00Z",
     assignedTo: { id: "u1", name: "Bob Agent" },
@@ -33,7 +48,7 @@ const sampleTickets: Ticket[] = [
     subject: "Payment failed",
     senderName: "Carol Jones",
     senderEmail: "carol@example.com",
-    status: TicketStatus.closed,
+    status: "closed",
     category: null,
     createdAt: "2024-01-20T12:00:00Z",
     assignedTo: null,
@@ -46,7 +61,7 @@ describe("Tickets page", () => {
   });
 
   it("renders the heading and description", () => {
-    mockedGet.mockReturnValue(new Promise(() => {}));
+    mockEndpoints("pending");
     renderTickets();
 
     expect(
@@ -58,7 +73,7 @@ describe("Tickets page", () => {
   });
 
   it("requests /api/tickets with default sort params", () => {
-    mockedGet.mockReturnValue(new Promise(() => {}));
+    mockEndpoints("pending");
     renderTickets();
 
     expect(mockedGet).toHaveBeenCalledWith("/api/tickets", {
@@ -68,14 +83,14 @@ describe("Tickets page", () => {
   });
 
   it("renders a sort button for each column header", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     renderTickets();
     await screen.findByText("Cannot login");
     expect(screen.getAllByRole("button").length).toBeGreaterThanOrEqual(6);
   });
 
   it("refetches with new sort params when Subject header is clicked", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     const user = userEvent.setup();
     renderTickets();
     await screen.findByText("Cannot login");
@@ -93,7 +108,7 @@ describe("Tickets page", () => {
   });
 
   it("renders five skeleton rows while loading", () => {
-    mockedGet.mockReturnValue(new Promise(() => {}));
+    mockEndpoints("pending");
     renderTickets();
 
     const rows = screen.getAllByRole("row");
@@ -101,7 +116,7 @@ describe("Tickets page", () => {
   });
 
   it("renders ticket rows once data arrives", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     renderTickets();
 
     expect(await screen.findByText("Cannot login")).toBeInTheDocument();
@@ -109,7 +124,7 @@ describe("Tickets page", () => {
   });
 
   it("shows an error message when the request fails", async () => {
-    mockedGet.mockRejectedValue(new Error("Network down"));
+    mockEndpoints("error");
     renderTickets();
 
     expect(
@@ -118,7 +133,7 @@ describe("Tickets page", () => {
   });
 
   it("shows the empty state when the API returns no tickets", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: [] } });
+    mockEndpoints([]);
     renderTickets();
 
     expect(await screen.findByText(/no tickets found/i)).toBeInTheDocument();
@@ -131,7 +146,7 @@ describe("TicketsTable row rendering", () => {
   });
 
   it("renders sender name and email in each row", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     renderTickets();
 
     const aliceRow = (await screen.findByText("Alice Smith")).closest("tr");
@@ -148,36 +163,35 @@ describe("TicketsTable row rendering", () => {
   });
 
   it("renders correct status badge labels", async () => {
-    mockedGet.mockResolvedValue({
-      data: {
-        tickets: [
-          { ...sampleTickets[0], id: 1, subject: "Ticket A", status: TicketStatus.open },
-          { ...sampleTickets[0], id: 2, subject: "Ticket B", status: TicketStatus.inProgress },
-          { ...sampleTickets[0], id: 3, subject: "Ticket C", status: TicketStatus.closed },
-        ],
-      },
-    });
+    mockEndpoints([
+      { ...sampleTickets[0], id: 1, subject: "Ticket A", status: "open" },
+      { ...sampleTickets[0], id: 2, subject: "Ticket B", status: "resolved" },
+      { ...sampleTickets[0], id: 3, subject: "Ticket C", status: "closed" },
+    ]);
     renderTickets();
 
     await screen.findByText("Ticket A");
-    expect(screen.getByText("Open")).toBeInTheDocument();
-    expect(screen.getByText("In Progress")).toBeInTheDocument();
-    expect(screen.getByText("Closed")).toBeInTheDocument();
+    const table = screen.getByRole("table");
+    expect(within(table).getByText("Open")).toBeInTheDocument();
+    expect(within(table).getByText("Resolved")).toBeInTheDocument();
+    expect(within(table).getByText("Closed")).toBeInTheDocument();
   });
 
   it("applies correct CSS classes to status badges", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     renderTickets();
 
-    const openBadge = await screen.findByText("Open");
-    const closedBadge = screen.getByText("Closed");
+    await screen.findByText("Cannot login");
+    const table = screen.getByRole("table");
+    const openBadge = within(table).getByText("Open");
+    const closedBadge = within(table).getByText("Closed");
 
     expect(openBadge).toHaveClass("bg-amber-100", "text-amber-800");
     expect(closedBadge).toHaveClass("bg-gray-100", "text-gray-600");
   });
 
   it("shows category when present and '—' when null", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     renderTickets();
 
     await screen.findByText("Cannot login");
@@ -186,7 +200,7 @@ describe("TicketsTable row rendering", () => {
   });
 
   it("shows assignee name when assigned and 'Unassigned' when null", async () => {
-    mockedGet.mockResolvedValue({ data: { tickets: sampleTickets } });
+    mockEndpoints(sampleTickets);
     renderTickets();
 
     await screen.findByText("Cannot login");

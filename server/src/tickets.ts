@@ -27,13 +27,19 @@ const SORTABLE_FIELDS = [
 ] as const;
 type SortableField = (typeof SORTABLE_FIELDS)[number];
 
+const VALID_STATUSES = ["open", "resolved", "closed"] as const;
+type ValidStatus = (typeof VALID_STATUSES)[number];
+
 const ticketQuerySchema = z.object({
   sortBy: z.enum(SORTABLE_FIELDS).default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
+  status: z.string().optional(),
+  category: z.string().optional(),
+  search: z.string().optional(),
 });
 
 function buildOrderBy(
-  sortBy: SortableField | undefined,
+  sortBy: SortableField,
   order: "asc" | "desc",
 ): Prisma.TicketOrderByWithRelationInput {
   switch (sortBy) {
@@ -52,6 +58,23 @@ function buildOrderBy(
   }
 }
 
+function buildWhere(
+  statuses: ValidStatus[],
+  category: string | undefined,
+  search: string | undefined,
+): Prisma.TicketWhereInput {
+  const where: Prisma.TicketWhereInput = {};
+  if (statuses.length > 0) where.status = { in: statuses };
+  if (category) where.category = category;
+  if (search)
+    where.OR = [
+      { subject: { contains: search, mode: "insensitive" } },
+      { senderName: { contains: search, mode: "insensitive" } },
+      { senderEmail: { contains: search, mode: "insensitive" } },
+    ];
+  return where;
+}
+
 export const ticketsRouter = Router();
 
 ticketsRouter.get(
@@ -59,13 +82,28 @@ ticketsRouter.get(
   requireAuth,
   async (req: Request, res: Response) => {
     const parsed = ticketQuerySchema.safeParse(req.query);
-    const { sortBy, order } = parsed.success
+    const { sortBy, order, status, category, search } = parsed.success
       ? parsed.data
-      : { sortBy: "createdAt" as const, order: "desc" as const };
+      : {
+          sortBy: "createdAt" as const,
+          order: "desc" as const,
+          status: undefined,
+          category: undefined,
+          search: undefined,
+        };
+
+    const statuses = status
+      ? status
+          .split(",")
+          .filter((s): s is ValidStatus =>
+            (VALID_STATUSES as readonly string[]).includes(s),
+          )
+      : [];
 
     const tickets = await db.ticket.findMany({
       select: ticketSelect,
       orderBy: buildOrderBy(sortBy, order),
+      where: buildWhere(statuses, category, search),
     });
     res.json({ tickets });
   },

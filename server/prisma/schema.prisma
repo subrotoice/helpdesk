@@ -33,7 +33,7 @@ enum UserRole {
 
 enum TicketStatus {
   open
-  inProgress
+  resolved
   closed
 }
 

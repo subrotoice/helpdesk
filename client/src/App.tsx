@@ -3,7 +3,7 @@ import Layout from "./components/Layout";
 import RequireAdmin from "./components/RequireAdmin";
 import RequireAuth from "./components/RequireAuth";
 import Home from "./pages/Home";
-import Tickets from "./pages/Tickets";
+import TicketsPage from "./pages/TicketsPage";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 
@@ -24,7 +24,7 @@ function App() {
           path="/tickets"
           element={
             <RequireAuth>
-              <Tickets />
+              <TicketsPage />
             </RequireAuth>
           }
         />

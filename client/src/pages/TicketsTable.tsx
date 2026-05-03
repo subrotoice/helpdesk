@@ -1,13 +1,15 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  type OnChangeFn,
   type SortingState,
 } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
-import { TicketStatus } from "@/lib/ticket-status";
+import { type TicketFilters, type TicketStatus } from "@/lib/ticket-status";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -30,18 +32,15 @@ export type Ticket = {
 };
 
 const statusStyles: Record<TicketStatus, string> = {
-  [TicketStatus.open]:
-    "rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800",
-  [TicketStatus.inProgress]:
-    "rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800",
-  [TicketStatus.closed]:
-    "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600",
+  open: "rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800",
+  resolved: "rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800",
+  closed: "rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600",
 };
 
 const statusLabels: Record<TicketStatus, string> = {
-  [TicketStatus.open]: "Open",
-  [TicketStatus.inProgress]: "In Progress",
-  [TicketStatus.closed]: "Closed",
+  open: "Open",
+  resolved: "Resolved",
+  closed: "Closed",
 };
 
 const columnHelper = createColumnHelper<Ticket>();
@@ -61,9 +60,7 @@ const columns = [
     enableSorting: true,
     cell: (info) => (
       <>
-        <span className="block font-medium">
-          {info.row.original.senderName}
-        </span>
+        <span className="block font-medium">{info.row.original.senderName}</span>
         <span className="block text-xs text-gray-500">{info.getValue()}</span>
       </>
     ),
@@ -86,9 +83,7 @@ const columns = [
     header: "Assigned To",
     enableSorting: true,
     cell: (info) =>
-      info.getValue()?.name ?? (
-        <span className="text-gray-400">Unassigned</span>
-      ),
+      info.getValue()?.name ?? <span className="text-gray-400">Unassigned</span>,
   }),
   columnHelper.accessor("createdAt", {
     header: "Created",
@@ -97,29 +92,71 @@ const columns = [
   }),
 ];
 
+async function fetchTickets(
+  params: Record<string, string | undefined>,
+): Promise<Ticket[]> {
+  const defined = Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== undefined),
+  );
+  const res = await axios.get<{ tickets: Ticket[] }>("/api/tickets", {
+    withCredentials: true,
+    params: defined,
+  });
+  return res.data.tickets;
+}
+
+function sortingToParams(sorting: SortingState) {
+  const first = sorting[0];
+  if (!first) return {};
+  return { sortBy: first.id, order: first.desc ? "desc" : "asc" };
+}
+
 type Props = {
-  tickets: Ticket[] | undefined;
-  isPending: boolean;
-  isFetching?: boolean;
-  sorting: SortingState;
-  onSortingChange: OnChangeFn<SortingState>;
+  filters: TicketFilters;
 };
 
-export default function TicketsTable({
-  tickets,
-  isPending,
-  isFetching = false,
-  sorting,
-  onSortingChange,
-}: Props) {
+export default function TicketsTable({ filters }: Props) {
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "createdAt", desc: true },
+  ]);
+
+  const [debouncedSearch, setDebouncedSearch] = useState(
+    filters.searchInput ?? "",
+  );
+  useEffect(() => {
+    const t = setTimeout(
+      () => setDebouncedSearch(filters.searchInput?.trim() ?? ""),
+      300,
+    );
+    return () => clearTimeout(t);
+  }, [filters.searchInput]);
+
+  const sortParams = sortingToParams(sorting);
+  const queryParams: Record<string, string | undefined> = {
+    ...sortParams,
+    status: filters.status,
+    category: filters.category,
+    search: debouncedSearch || undefined,
+  };
+
+  const { data: tickets, isPending, isFetching, isError, error } = useQuery({
+    queryKey: ["tickets", queryParams],
+    queryFn: () => fetchTickets(queryParams),
+    placeholderData: keepPreviousData,
+  });
+
   const table = useReactTable({
     data: tickets ?? [],
     columns,
     state: { sorting },
-    onSortingChange,
+    onSortingChange: setSorting,
     manualSorting: true,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  if (isError) {
+    return <p className="text-red-600">Error: {error.message}</p>;
+  }
 
   return (
     <div

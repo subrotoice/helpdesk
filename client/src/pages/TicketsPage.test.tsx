@@ -22,7 +22,9 @@ function mockEndpoints(
     if (url === "/api/tickets") {
       if (tickets === "pending") return new Promise(() => {});
       if (tickets === "error") return Promise.reject(new Error("Network down"));
-      return Promise.resolve({ data: { tickets } });
+      return Promise.resolve({
+        data: { tickets, total: tickets.length, page: 1, pageSize: 10 },
+      });
     }
     return Promise.reject(new Error(`Unexpected GET: ${url}`));
   });
@@ -78,7 +80,7 @@ describe("Tickets page", () => {
 
     expect(mockedGet).toHaveBeenCalledWith("/api/tickets", {
       withCredentials: true,
-      params: { sortBy: "createdAt", order: "desc" },
+      params: { sortBy: "createdAt", order: "desc", page: 1, pageSize: 10 },
     });
   });
 
@@ -102,17 +104,17 @@ describe("Tickets page", () => {
     await waitFor(() => {
       expect(mockedGet).toHaveBeenCalledWith("/api/tickets", {
         withCredentials: true,
-        params: { sortBy: "subject", order: "asc" },
+        params: { sortBy: "subject", order: "asc", page: 1, pageSize: 10 },
       });
     });
   });
 
-  it("renders five skeleton rows while loading", () => {
+  it("renders skeleton rows while loading", () => {
     mockEndpoints("pending");
     renderTickets();
 
     const rows = screen.getAllByRole("row");
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(11); // 1 header + 10 skeleton rows
   });
 
   it("renders ticket rows once data arrives", async () => {

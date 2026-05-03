@@ -26,7 +26,6 @@ type Props = {
 
 export default function TicketsFilters({ filters, onChange }: Props) {
   const [searchInput, setSearchInput] = useState(filters.searchInput ?? "");
-
   // Sync local input when parent resets filters (e.g. clear all)
   useEffect(() => {
     setSearchInput(filters.searchInput ?? "");
@@ -95,7 +94,7 @@ export default function TicketsFilters({ filters, onChange }: Props) {
         </SelectContent>
       </Select>
 
-      {filters && (
+      {Object.keys(filters).length > 0 && (
         <Button
           size="sm"
           className="h-8 px-3 text-sm"

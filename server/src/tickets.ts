@@ -36,6 +36,8 @@ const ticketQuerySchema = z.object({
   status: z.string().optional(),
   category: z.string().optional(),
   search: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 function buildOrderBy(
@@ -82,15 +84,18 @@ ticketsRouter.get(
   requireAuth,
   async (req: Request, res: Response) => {
     const parsed = ticketQuerySchema.safeParse(req.query);
-    const { sortBy, order, status, category, search } = parsed.success
-      ? parsed.data
-      : {
-          sortBy: "createdAt" as const,
-          order: "desc" as const,
-          status: undefined,
-          category: undefined,
-          search: undefined,
-        };
+    const { sortBy, order, status, category, search, page, pageSize } =
+      parsed.success
+        ? parsed.data
+        : {
+            sortBy: "createdAt" as const,
+            order: "desc" as const,
+            status: undefined,
+            category: undefined,
+            search: undefined,
+            page: 1,
+            pageSize: 10,
+          };
 
     const statuses = status
       ? status
@@ -100,11 +105,19 @@ ticketsRouter.get(
           )
       : [];
 
-    const tickets = await db.ticket.findMany({
-      select: ticketSelect,
-      orderBy: buildOrderBy(sortBy, order),
-      where: buildWhere(statuses, category, search),
-    });
-    res.json({ tickets });
+    const where = buildWhere(statuses, category, search);
+
+    const [tickets, total] = await db.$transaction([
+      db.ticket.findMany({
+        select: ticketSelect,
+        orderBy: buildOrderBy(sortBy, order),
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      db.ticket.count({ where }),
+    ]);
+
+    res.json({ tickets, total, page, pageSize });
   },
 );

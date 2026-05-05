@@ -77,7 +77,43 @@ function buildWhere(
   return where;
 }
 
+const ticketDetailSelect = {
+  id: true,
+  subject: true,
+  body: true,
+  senderEmail: true,
+  senderName: true,
+  status: true,
+  category: true,
+  createdAt: true,
+  updatedAt: true,
+  assignedTo: {
+    select: { id: true, name: true },
+  },
+} as const;
+
 export const ticketsRouter = Router();
+
+ticketsRouter.get(
+  "/tickets/:id",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid ticket ID" });
+      return;
+    }
+    const ticket = await db.ticket.findUnique({
+      where: { id },
+      select: ticketDetailSelect,
+    });
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    res.json(ticket);
+  },
+);
 
 ticketsRouter.get(
   "/tickets",

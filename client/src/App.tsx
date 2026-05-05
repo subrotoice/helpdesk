@@ -4,6 +4,7 @@ import RequireAdmin from "./components/RequireAdmin";
 import RequireAuth from "./components/RequireAuth";
 import Home from "./pages/Home";
 import TicketsPage from "./pages/TicketsPage";
+import TicketDetailPage from "./pages/TicketDetailPage";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 
@@ -25,6 +26,14 @@ function App() {
           element={
             <RequireAuth>
               <TicketsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/tickets/:id"
+          element={
+            <RequireAuth>
+              <TicketDetailPage />
             </RequireAuth>
           }
         />

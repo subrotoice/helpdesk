@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
 import {
   ticketCategories,
@@ -25,22 +24,6 @@ type Props = {
 };
 
 export default function TicketsFilters({ filters, onChange }: Props) {
-  const [searchInput, setSearchInput] = useState(filters.searchInput ?? "");
-  // Sync local input when parent resets filters (e.g. clear all)
-  useEffect(() => {
-    setSearchInput(filters.searchInput ?? "");
-  }, [filters.searchInput]);
-
-  useEffect(() => {
-    const t = setTimeout(
-      () =>
-        onChange({ ...filters, searchInput: searchInput.trim() || undefined }),
-      300,
-    );
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
-
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative">
@@ -48,8 +31,10 @@ export default function TicketsFilters({ filters, onChange }: Props) {
         <Input
           className="h-8 w-56 pl-8 text-sm"
           placeholder="Search tickets…"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
+          value={filters.searchInput ?? ""}
+          onChange={(e) =>
+            onChange({ ...filters, searchInput: e.target.value || undefined })
+          }
         />
       </div>
 
@@ -99,10 +84,7 @@ export default function TicketsFilters({ filters, onChange }: Props) {
           size="sm"
           className="h-8 px-3 text-sm"
           variant="ghost"
-          onClick={() => {
-            setSearchInput("");
-            onChange({});
-          }}
+          onClick={() => onChange({})}
         >
           <X className="h-3.5 w-3.5" />
           Clear

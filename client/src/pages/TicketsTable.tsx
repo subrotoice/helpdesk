@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   createColumnHelper,
@@ -58,9 +59,13 @@ const columns = [
     header: "Subject",
     enableSorting: true,
     cell: (info) => (
-      <span className="block truncate font-medium" title={info.getValue()}>
+      <Link
+        to={`/tickets/${info.row.original.id}`}
+        className="block truncate font-medium text-blue-600 hover:underline"
+        title={info.getValue()}
+      >
         {info.getValue()}
-      </span>
+      </Link>
     ),
   }),
   columnHelper.accessor("senderEmail", {

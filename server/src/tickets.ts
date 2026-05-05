@@ -115,6 +115,61 @@ ticketsRouter.get(
   },
 );
 
+ticketsRouter.patch(
+  "/tickets/:id",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid ticket ID" });
+      return;
+    }
+    const schema = z.object({
+      assignedToId: z.string().nullable().optional(),
+      status: z.enum(VALID_STATUSES).optional(),
+      category: z.string().nullable().optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: "ValidationError", issues: parsed.error.issues });
+      return;
+    }
+    const { assignedToId, status, category } = parsed.data;
+
+    if (assignedToId !== undefined && assignedToId !== null) {
+      const agent = await db.user.findUnique({
+        where: { id: assignedToId },
+        select: { id: true, role: true, deletedAt: true },
+      });
+      if (!agent || agent.deletedAt !== null) {
+        res.status(400).json({ error: "Invalid agent" });
+        return;
+      }
+    }
+
+    const existing = await db.ticket.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    const updated = await db.ticket.update({
+      where: { id },
+      data: {
+        ...(assignedToId !== undefined && { assignedToId }),
+        ...(status !== undefined && { status }),
+        ...(category !== undefined && { category }),
+      },
+      select: ticketDetailSelect,
+    });
+    res.json(updated);
+  },
+);
+
 ticketsRouter.get(
   "/tickets",
   requireAuth,

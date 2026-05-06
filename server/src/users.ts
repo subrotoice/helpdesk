@@ -177,6 +177,7 @@ usersRouter.delete(
 
     await db.$transaction([
       db.session.deleteMany({ where: { userId: id } }),
+      db.ticket.updateMany({ where: { assignedToId: id }, data: { assignedToId: null } }),
       db.user.update({ where: { id }, data: { deletedAt: new Date() } }),
     ]);
     res.status(204).end();

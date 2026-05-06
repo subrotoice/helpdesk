@@ -14,9 +14,6 @@ export default function Navbar() {
         <Link to="/" className="font-semibold">
           Ticket Management
         </Link>
-        <Link to="/" className="text-sm text-gray-600 hover:text-gray-900">
-          Home
-        </Link>
         <Link
           to="/tickets"
           className="text-sm text-gray-600 hover:text-gray-900"

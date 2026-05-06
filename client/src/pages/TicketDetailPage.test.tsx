@@ -70,9 +70,20 @@ const sampleTicket = {
   assignedTo: null as { id: string; name: string } | null,
 };
 
+const sampleReplies = [
+  {
+    id: 10,
+    body: "We are looking into this.",
+    senderType: "agent" as const,
+    createdAt: "2024-01-16T10:00:00Z",
+    author: { id: "u1", name: "Bob Agent" },
+  },
+];
+
 function mockEndpoints(
   ticket: typeof sampleTicket | "pending" | "error",
   agents = sampleAgents,
+  replies: typeof sampleReplies | [] = [],
 ) {
   mockedGet.mockImplementation((url: string) => {
     if (url === "/api/tickets/1") {
@@ -82,6 +93,9 @@ function mockEndpoints(
     }
     if (url === "/api/users") {
       return Promise.resolve({ data: { users: agents } });
+    }
+    if (url === "/api/tickets/1/replies") {
+      return Promise.resolve({ data: replies });
     }
     return Promise.reject(new Error(`Unexpected GET: ${url}`));
   });
@@ -320,6 +334,48 @@ describe("TicketDetailPage — category", () => {
         { category: null },
         { withCredentials: true },
       );
+    });
+  });
+});
+
+describe("TicketDetailPage — replies", () => {
+  afterEach(() => vi.clearAllMocks());
+
+  it("renders no reply cards when the endpoint returns an empty array", async () => {
+    mockEndpoints(sampleTicket, sampleAgents, []);
+    renderPage();
+    await screen.findByRole("heading", { name: /cannot login to the app/i });
+    expect(screen.queryByText(/we are looking into this/i)).not.toBeInTheDocument();
+  });
+
+  it("renders reply cards when the endpoint returns replies", async () => {
+    mockEndpoints(sampleTicket, sampleAgents, sampleReplies);
+    renderPage();
+    expect(
+      await screen.findByText(/we are looking into this/i),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the author name on a reply card", async () => {
+    mockEndpoints(sampleTicket, sampleAgents, sampleReplies);
+    renderPage();
+    await screen.findByText(/we are looking into this/i);
+    expect(screen.getAllByText("Bob Agent").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("shows the Agent badge on agent replies", async () => {
+    mockEndpoints(sampleTicket, sampleAgents, sampleReplies);
+    renderPage();
+    await screen.findByText(/we are looking into this/i);
+    expect(screen.getByText("Agent")).toBeInTheDocument();
+  });
+
+  it("fetches replies from /api/tickets/:id/replies with credentials", async () => {
+    mockEndpoints(sampleTicket, sampleAgents, sampleReplies);
+    renderPage();
+    await screen.findByText(/we are looking into this/i);
+    expect(mockedGet).toHaveBeenCalledWith("/api/tickets/1/replies", {
+      withCredentials: true,
     });
   });
 });

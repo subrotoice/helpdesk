@@ -21,6 +21,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   tickets       Ticket[]
+  replies       Reply[]
 
   @@unique([email])
   @@map("user")
@@ -37,6 +38,11 @@ enum TicketStatus {
   closed
 }
 
+enum SenderType {
+  agent
+  customer
+}
+
 model Ticket {
   id           Int          @id @default(autoincrement())
   subject      String
@@ -51,10 +57,25 @@ model Ticket {
   inReplyTo    String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  replies      Reply[]
 
   @@index([senderEmail])
   @@index([assignedToId])
   @@map("ticket")
+}
+
+model Reply {
+  id         Int        @id @default(autoincrement())
+  body       String
+  senderType SenderType @default(agent)
+  ticketId   Int
+  ticket     Ticket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId   String?
+  author     User?      @relation(fields: [authorId], references: [id])
+  createdAt  DateTime   @default(now())
+
+  @@index([ticketId])
+  @@map("reply")
 }
 
 model Session {

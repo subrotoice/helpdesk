@@ -171,6 +171,86 @@ ticketsRouter.patch(
 );
 
 ticketsRouter.get(
+  "/tickets/:id/replies",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid ticket ID" });
+      return;
+    }
+    const ticket = await db.ticket.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    const replies = await db.reply.findMany({
+      where: { ticketId: id },
+      select: {
+        id: true,
+        body: true,
+        senderType: true,
+        createdAt: true,
+        author: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    res.json(replies);
+  },
+);
+
+const replySchema = z.object({
+  body: z.string().min(1).max(10000),
+});
+
+ticketsRouter.post(
+  "/tickets/:id/replies",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid ticket ID" });
+      return;
+    }
+    const parsed = replySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: "ValidationError", issues: parsed.error.issues });
+      return;
+    }
+    const ticket = await db.ticket.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    const session = res.locals.session as { user: { id: string } };
+    const reply = await db.reply.create({
+      data: {
+        body: parsed.data.body,
+        ticketId: id,
+        authorId: session.user.id,
+        senderType: "agent",
+      },
+      select: {
+        id: true,
+        body: true,
+        senderType: true,
+        createdAt: true,
+        author: { select: { id: true, name: true } },
+      },
+    });
+    res.status(201).json(reply);
+  },
+);
+
+ticketsRouter.get(
   "/tickets",
   requireAuth,
   async (req: Request, res: Response) => {

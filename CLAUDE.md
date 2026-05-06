@@ -41,6 +41,8 @@ Delegate ALL E2E test work — writing specs, running them, modifying `playwrigh
 
 For quick test-related questions ("what command runs the tests?"), read `.claude/agents/playwright-e2e-writer.md` directly instead of spawning the agent.
 
+**E2E scope rule**: Only write E2E tests for functionality that unit tests genuinely cannot cover — real auth flows (session guards, redirects), DB round-trips (submit → result appears after re-fetch), and cross-process concerns (query invalidation chain with a real server). Never duplicate coverage that already exists in mocked-axios unit tests (loading states, field rendering, PATCH called with correct args, etc.).
+
 ### Component (Vitest + React Testing Library)
 
 Stack: Vitest 4 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`. Config lives in `client/vite.config.ts` under the `test` block (globals on, setup file at `client/src/test/setup.ts`).
@@ -73,4 +75,5 @@ Conventions:
 - shadcn/ui — install with `bunx --bun shadcn@latest add <name>`. Radix-nova preset uses `Field`/`FieldGroup`/`FieldLabel`/`FieldError` (from `@/components/ui/field`) — no `Form` component. Wire RHF via `Controller` with `data-invalid={fieldState.invalid}` on `Field` and `aria-invalid` on the input. Canonical example: `client/src/pages/Login.tsx`.
 - Forms — use `react-hook-form` + `zod` via `zodResolver(schema)`. Define a single zod schema, derive types with `z.infer`, surface server errors via `setError("root", ...)`. Mirror the schema server-side and validate with `safeParse` returning `{ error: "ValidationError", issues: ... }` on 400. Canonical examples: `client/src/pages/Login.tsx` (entry-point form), `client/src/pages/CreateUserDialog.tsx` (mutation dialog with `useMutation`), `server/src/users.ts` (server-side mirror).
 - Use TanStack React Query ('useQuery', 'useMutation') for server state management (not 'useEffect' + 'useState')
+- Sub-components of a page that display ticket data accept a `ticket` prop typed as a structural subset (only the fields they read), never individual scalar props derived from the ticket. The page passes `ticket={ticket}` directly; TypeScript structural typing ensures compatibility.
 - Path alias `@/*` → `client/src/*` (set in `client/tsconfig.json`, `client/tsconfig.app.json`, `client/vite.config.ts`). TS 6 deprecates `baseUrl`, so `paths` is used alone.

@@ -11,6 +11,7 @@ Routes defined in `client/src/App.tsx`:
 | `/login` | none (public) | renders | renders (redirected away by useEffect if session present) |
 | `/` | RequireAuth | → `/login` | renders |
 | `/tickets` | RequireAuth | → `/login` | renders |
+| `/tickets/:id` | RequireAuth | → `/login` | renders |
 | `/users` | RequireAdmin | → `/login` | → `/` |
 
 `RequireAuth` (client/src/components/RequireAuth.tsx): `isPending` → null; no session → `Navigate to="/login"`; else renders children.

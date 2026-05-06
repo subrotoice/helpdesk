@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 export type SenderType = "agent" | "customer";
 
 export type Reply = {
@@ -54,9 +56,12 @@ export function ReplyCard({ reply, fallbackName }: Props) {
         </div>
       </div>
       <div className="p-8">
-        <p className="whitespace-pre-wrap text-sm leading-7 text-gray-700">
-          {reply.body}
-        </p>
+        <p
+          className="whitespace-pre-wrap text-sm leading-7 text-gray-700"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(reply.body),
+          }}
+        />
       </div>
     </div>
   );

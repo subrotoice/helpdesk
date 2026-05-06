@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import type { Ticket } from "@/lib/ticket";
 
 type Props = { ticket: Ticket };
@@ -22,9 +23,12 @@ export function TicketMessageCard({ ticket }: Props) {
         </div>
       </div>
       <div className="p-8">
-        <p className="whitespace-pre-wrap text-sm leading-7 text-gray-700">
-          {ticket.body}
-        </p>
+        <p
+          className="whitespace-pre-wrap text-sm leading-7 text-gray-700"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(ticket.body),
+          }}
+        />
       </div>
     </div>
   );

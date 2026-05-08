@@ -71,7 +71,10 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_KNOW_WHAT_I_AM_DOING bunx prisma generate)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_AM_USING_PRISMA_IN_A_SAFE_WAY bunx prisma migrate dev --name add_reply_model)",
       "Bash(bunx --bun shadcn@latest add textarea --yes)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_AM_USING_PRISMA_IN_A_SAFE_WAY bunx prisma migrate dev --name add_reply_sender_type)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=I_AM_USING_PRISMA_IN_A_SAFE_WAY bunx prisma migrate dev --name add_reply_sender_type)",
+      "Bash(Get-ChildItem -Path \"E:\\\\Tutorials\\\\helpdesk\\\\client\\\\src\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-Process *)"
     ]
   }
 }

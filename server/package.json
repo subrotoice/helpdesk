@@ -11,8 +11,10 @@
     "seed": "bun src/seed.ts"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.39",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "ai": "^6.0.176",
     "better-auth": "^1.6.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

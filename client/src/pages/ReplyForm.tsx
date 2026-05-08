@@ -20,8 +20,13 @@ export function ReplyForm({ ticket }: Props) {
     register,
     handleSubmit,
     reset,
+    setValue,
+    getValues,
+    watch,
     formState: { errors },
   } = useForm<ReplyFormValues>({ resolver: zodResolver(replySchema) });
+
+  const body = watch("body", "");
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: ReplyFormValues) =>
@@ -33,6 +38,26 @@ export function ReplyForm({ ticket }: Props) {
       reset();
     },
   });
+
+  const {
+    mutate: polish,
+    isPending: isPolishing,
+    error: polishError,
+    reset: resetPolish,
+  } = useMutation({
+    mutationFn: (body: string) =>
+      axios.post<{ body: string }>(
+        `/api/tickets/${ticket.id}/polish`,
+        { body },
+        { withCredentials: true },
+      ),
+    onSuccess: (res) => {
+      setValue("body", res.data.body, { shouldValidate: true });
+    },
+  });
+
+  const busy = isPending || isPolishing;
+  const hasBody = body.trim().length > 0;
 
   return (
     <div className="rounded-xl border bg-white shadow-sm px-6 py-5">
@@ -46,16 +71,32 @@ export function ReplyForm({ ticket }: Props) {
             {...register("body")}
             placeholder="Write your reply…"
             rows={5}
-            disabled={isPending}
+            disabled={busy}
             aria-invalid={!!errors.body}
             className="resize-none"
           />
-          {errors.body && (
-            <p className="text-xs text-red-600">{errors.body.message}</p>
-          )}
         </div>
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isPending}>
+        {polishError && (
+          <p className="text-xs text-red-600">
+            {axios.isAxiosError(polishError)
+              ? (polishError.response?.data?.error ?? polishError.message)
+              : "Failed to polish reply. Please try again."}
+          </p>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() => {
+              resetPolish();
+              const body = getValues("body");
+              if (body.trim()) polish(body);
+            }}
+          >
+            {isPolishing ? "Polishing…" : "Polish"}
+          </Button>
+          <Button type="submit" disabled={busy || !hasBody}>
             {isPending ? "Sending…" : "Send reply"}
           </Button>
         </div>

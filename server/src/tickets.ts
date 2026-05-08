@@ -3,6 +3,8 @@ import { z } from "zod";
 import { db } from "./db";
 import { requireAuth } from "./require-auth";
 import type { Prisma } from "./generated/prisma/client";
+import { groq } from "@ai-sdk/groq";
+import { generateText } from "ai";
 
 const ticketSelect = {
   id: true,
@@ -290,5 +292,48 @@ ticketsRouter.get(
     ]);
 
     res.json({ tickets, total, page, pageSize });
+  },
+);
+
+const polishBodySchema = z.object({
+  body: z.string().min(1).max(1000),
+});
+
+ticketsRouter.post(
+  "/tickets/:id/polish",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid ticket ID" });
+      return;
+    }
+    const parsed = polishBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "ValidationError", issues: parsed.error.issues });
+      return;
+    }
+    const session = res.locals.session as { user: { id: string; name: string } };
+    const ticket = await db.ticket.findUnique({
+      where: { id },
+      select: { senderName: true },
+    });
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    try {
+      const { text } = await generateText({
+        model: groq("openai/gpt-oss-120b"),
+        system:
+          `You are an expert customer support agent. Improve the following draft reply to be more professional, clear, empathetic, and helpful. Address the customer by their first name: ${ticket.senderName}. Return only the improved reply text with no extra commentary.`,
+        prompt: parsed.data.body,
+      });
+      const signature = `\n\n${session.user.name}\nhttps://edeves.com`;
+      res.json({ body: text + signature });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "AI request failed";
+      res.status(502).json({ error: message });
+    }
   },
 );

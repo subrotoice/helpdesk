@@ -300,6 +300,52 @@ const polishBodySchema = z.object({
 });
 
 ticketsRouter.post(
+  "/tickets/:id/summarize",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid ticket ID" });
+      return;
+    }
+    const ticket = await db.ticket.findUnique({
+      where: { id },
+      select: { subject: true, body: true, senderName: true, senderEmail: true },
+    });
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    const replies = await db.reply.findMany({
+      where: { ticketId: id },
+      orderBy: { createdAt: "asc" },
+      select: { body: true, senderType: true, author: { select: { name: true } }, createdAt: true },
+    });
+
+    const conversation = [
+      `[Original message from ${ticket.senderName} <${ticket.senderEmail}>]\n${ticket.body}`,
+      ...replies.map((r) => {
+        const sender = r.senderType === "agent" ? (r.author?.name ?? "Agent") : ticket.senderName;
+        return `[${r.senderType === "agent" ? "Agent" : "Customer"}: ${sender}]\n${r.body}`;
+      }),
+    ].join("\n\n---\n\n");
+
+    try {
+      const { text } = await generateText({
+        model: groq("openai/gpt-oss-120b"),
+        system:
+          "You are a helpful assistant summarizing customer support tickets. Given the full ticket conversation below, produce a concise summary (3-5 sentences) that covers: the customer's issue, what steps have been taken, and the current status. Be clear and factual.",
+        prompt: conversation,
+      });
+      res.json({ summary: text });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "AI request failed";
+      res.status(502).json({ error: message });
+    }
+  },
+);
+
+ticketsRouter.post(
   "/tickets/:id/polish",
   requireAuth,
   async (req: Request, res: Response) => {

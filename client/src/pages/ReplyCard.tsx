@@ -57,7 +57,7 @@ export function ReplyCard({ reply, fallbackName }: Props) {
       </div>
       <div className="p-8">
         <p
-          className="whitespace-pre-wrap text-sm leading-7 text-gray-700"
+          className="text-sm leading-7 text-gray-700"
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(reply.body),
           }}

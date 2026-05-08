@@ -9,6 +9,7 @@ import { TicketMessageCard } from "./TicketMessageCard";
 import { ReplyThread } from "./ReplyThread";
 import type { Reply } from "./ReplyCard";
 import { ReplyForm } from "./ReplyForm";
+import { TicketSummary } from "./TicketSummary";
 import { TicketSidebar, type Agent, type TicketPatch } from "./TicketSidebar";
 import { TicketDetailSkeleton } from "./TicketDetailSkeleton";
 
@@ -83,6 +84,7 @@ export default function TicketDetailPage() {
         <div className="col-span-9 flex flex-col gap-6">
           <TicketMetaCard ticket={ticket} />
           <TicketMessageCard ticket={ticket} />
+          <TicketSummary ticket={ticket} />
           <ReplyThread replies={replies ?? []} ticket={ticket} />
           <ReplyForm ticket={ticket} />
         </div>

@@ -6,6 +6,8 @@ import { auth } from "./auth";
 import { usersRouter } from "./users";
 import { ticketsRouter } from "./tickets";
 import { webhooksRouter } from "./webhooks";
+import { boss } from "./boss";
+import { registerWorkers } from "./workers";
 
 if (process.env.NODE_ENV === "production" && !process.env.CLIENT_ORIGIN) {
   throw new Error("CLIENT_ORIGIN must be set in production");
@@ -28,7 +30,7 @@ app.use(express.json());
 const api = express.Router();
 
 api.get("/health", (_req: Request, res: Response) => {
-  res.json({ status: "ok", service: "ticket-management-server Subroto 2" });
+  res.json({ status: "ok", service: "ticket-management-server" });
 });
 
 api.use(usersRouter);
@@ -37,6 +39,9 @@ api.use(ticketsRouter);
 app.use("/webhooks", webhooksRouter);
 
 app.use("/api", api);
+
+await boss.start();
+await registerWorkers();
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

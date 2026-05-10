@@ -1,26 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import { groq } from "@ai-sdk/groq";
-import { generateText } from "ai";
 import { db } from "./db";
-import type { Ticket } from "./generated/prisma/client";
-import { ticketCategories } from "@ticket-status";
-
-const categories = Object.keys(ticketCategories);
-
-async function classifyTicket(ticket: Ticket) {
-  try {
-    const { text } = await generateText({
-      model: groq("openai/gpt-oss-120b"),
-      system: `Classify the support ticket into exactly one of these categories: ${categories.join(", ")}. Reply with only the category name, nothing else.`,
-      prompt: `Subject: ${ticket.subject}\n\n${ticket.body}`,
-    });
-    const category = categories.find((c) => c === text.trim().toLowerCase()) ?? "general_question";
-    await db.ticket.update({ where: { id: ticket.id }, data: { category } });
-  } catch (err) {
-    console.error(`[classify] ticket ${ticket.id} failed:`, err instanceof Error ? err.message : err);
-  }
-}
+import { boss } from "./boss";
+import { CLASSIFY_QUEUE } from "./workers";
 
 const headerSchema = z.object({ name: z.string(), value: z.string() });
 
@@ -97,5 +79,5 @@ webhooksRouter.post("/email", async (req: Request, res: Response) => {
   });
 
   res.status(201).json({ received: true, ticketId: ticket.id });
-  void classifyTicket(ticket);
+  void boss.send(CLASSIFY_QUEUE, { id: ticket.id, subject: ticket.subject, body: ticket.body });
 });

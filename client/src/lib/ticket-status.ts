@@ -1,7 +1,9 @@
-export const ticketStatuses = ["open", "resolved", "closed"] as const;
+export const ticketStatuses = ["new", "processing", "open", "resolved", "closed"] as const;
 export type TicketStatus = (typeof ticketStatuses)[number];
 
 export const ticketStatusLabels: Record<TicketStatus, string> = {
+  new: "New",
+  processing: "Processing",
   open: "Open",
   resolved: "Resolved",
   closed: "Closed",

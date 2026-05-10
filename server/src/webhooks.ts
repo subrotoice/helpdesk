@@ -75,9 +75,9 @@ webhooksRouter.post("/email", async (req: Request, res: Response) => {
   const { name: senderName, email: senderEmail } = parseSender(from);
 
   const ticket = await db.ticket.create({
-    data: { subject, body, senderName, senderEmail, messageId, inReplyTo, status: "open" },
+    data: { subject, body, senderName, senderEmail, messageId, inReplyTo },
   });
 
   res.status(201).json({ received: true, ticketId: ticket.id });
-  void boss.send(CLASSIFY_QUEUE, { id: ticket.id, subject: ticket.subject, body: ticket.body });
+  void boss.send(CLASSIFY_QUEUE, { id: ticket.id, subject: ticket.subject, body: ticket.body, senderName: ticket.senderName });
 });

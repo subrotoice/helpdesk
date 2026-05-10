@@ -77,7 +77,16 @@
       "PowerShell(Get-Process *)",
       "Bash(Get-ChildItem -Path \"E:\\\\Tutorials\\\\helpdesk\" -Directory)",
       "Bash(Select-Object Name)",
-      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:4000/api/auth/sign-in/email\" -Method POST -ContentType \"application/json\" -Body '{\"email\":\"admin@example.com\",\"password\":\"s2SNVgrCttVBU7v9TrmbRtBw\"}' -ErrorAction SilentlyContinue 2>&1)"
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:4000/api/auth/sign-in/email\" -Method POST -ContentType \"application/json\" -Body '{\"email\":\"admin@example.com\",\"password\":\"s2SNVgrCttVBU7v9TrmbRtBw\"}' -ErrorAction SilentlyContinue 2>&1)",
+      "Bash(Get-ChildItem *)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=true bunx prisma migrate dev --name add_ticket_processing_states)",
+      "PowerShell($env:PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"true\"; Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx prisma migrate dev --name add_ticket_processing_states 2>&1)",
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; $output = bunx tsc --noEmit 2>&1; $filtered = $output | Where-Object { $_ -notmatch \"seed-tickets\" }; $filtered | Select-Object -First 40)",
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx tsc --noEmit 2>&1 | Where-Object { $_ -notmatch \"seed-tickets\" })",
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\"; $env:DATABASE_URL = \\(Get-Content server\\\\.env | Select-String \"^DATABASE_URL\" | ForEach-Object { \\($_ -split \"=\",2\\)[1] }\\); & psql $env:DATABASE_URL -c \"SELECT id, status, category FROM ticket WHERE id = 212;\" 2>&1)",
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; $out = bunx tsc --noEmit 2>&1; \\($out | Where-Object { $_ -notmatch \"seed-tickets\" }\\) -join \"`n\")",
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx tsc --noEmit 2>&1 | ForEach-Object { $_ } | Where-Object { $_ -notmatch \"seed-tickets\" } | Out-String)",
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx tsc --noEmit 2>&1 | ForEach-Object { if \\($_ -notmatch \"seed-tickets\"\\) { Write-Output $_ } })"
     ]
   }
 }

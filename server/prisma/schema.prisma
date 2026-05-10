@@ -33,6 +33,8 @@ enum UserRole {
 }
 
 enum TicketStatus {
+  new
+  processing
   open
   resolved
   closed
@@ -49,7 +51,7 @@ model Ticket {
   body         String
   senderEmail  String
   senderName   String
-  status       TicketStatus @default(open)
+  status       TicketStatus @default(new)
   category     String?
   assignedToId String?
   assignedTo   User?        @relation(fields: [assignedToId], references: [id])

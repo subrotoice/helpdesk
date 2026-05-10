@@ -29,7 +29,7 @@ const SORTABLE_FIELDS = [
 ] as const;
 type SortableField = (typeof SORTABLE_FIELDS)[number];
 
-const VALID_STATUSES = ["open", "resolved", "closed"] as const;
+const VALID_STATUSES = ["new", "processing", "open", "resolved", "closed"] as const;
 type ValidStatus = (typeof VALID_STATUSES)[number];
 
 const ticketQuerySchema = z.object({
@@ -68,7 +68,7 @@ function buildWhere(
   search: string | undefined,
 ): Prisma.TicketWhereInput {
   const where: Prisma.TicketWhereInput = {};
-  if (statuses.length > 0) where.status = { in: statuses };
+  where.status = statuses.length > 0 ? { in: statuses } : { in: ["open", "resolved", "closed"] };
   if (category) where.category = category;
   if (search)
     where.OR = [

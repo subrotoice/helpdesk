@@ -71,9 +71,9 @@ export default function TicketsFilters({ filters, onChange }: Props) {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>All categories</SelectItem>
-          {ticketCategories.map((cat) => (
-            <SelectItem key={cat} value={cat}>
-              {cat}
+          {Object.entries(ticketCategories).map(([key, label]) => (
+            <SelectItem key={key} value={key}>
+              {label}
             </SelectItem>
           ))}
         </SelectContent>

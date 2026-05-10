@@ -94,9 +94,9 @@ export function TicketSidebar({ ticket, agents, isUpdating, onUpdate }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">None</SelectItem>
-            {ticketCategories.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
+            {Object.entries(ticketCategories).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
               </SelectItem>
             ))}
           </SelectContent>

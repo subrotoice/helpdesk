@@ -22,6 +22,9 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "paths": {
+      "@ticket-status": ["../client/src/lib/ticket-status"]
+    },
 
     "types": ["bun-types"]
   },

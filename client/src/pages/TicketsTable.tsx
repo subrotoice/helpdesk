@@ -10,7 +10,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsLeft, ChevronsRight, ChevronsUpDown } from "lucide-react";
-import { type TicketFilters, type TicketStatus } from "@/lib/ticket-status";
+import { ticketCategories, type TicketCategory, type TicketFilters, type TicketStatus } from "@/lib/ticket-status";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -90,7 +90,12 @@ const columns = [
   columnHelper.accessor("category", {
     header: "Category",
     enableSorting: true,
-    cell: (info) => info.getValue() ?? <span className="text-gray-400">—</span>,
+    cell: (info) => {
+      const val = info.getValue();
+      return val
+        ? (ticketCategories[val as TicketCategory] ?? val)
+        : <span className="text-gray-400">—</span>;
+    },
   }),
   columnHelper.accessor("assignedTo", {
     header: "Assigned To",

@@ -7,12 +7,12 @@ export const ticketStatusLabels: Record<TicketStatus, string> = {
   closed: "Closed",
 };
 
-export const ticketCategories = [
-  "General Question",
-  "Technical Question",
-  "Refund Request",
-] as const;
-export type TicketCategory = (typeof ticketCategories)[number];
+export const ticketCategories = {
+  general_question: "General Question",
+  technical_question: "Technical Question",
+  refund_request: "Refund Request",
+} as const;
+export type TicketCategory = keyof typeof ticketCategories;
 
 export interface TicketFilters {
   searchInput?: string;

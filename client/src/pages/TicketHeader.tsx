@@ -1,6 +1,6 @@
 import { Tag } from "lucide-react";
 import type { Ticket } from "@/lib/ticket";
-import type { TicketStatus } from "@/lib/ticket-status";
+import { ticketCategories, type TicketCategory, type TicketStatus } from "@/lib/ticket-status";
 
 const statusStyles: Record<TicketStatus, string> = {
   open: "inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800",
@@ -32,7 +32,7 @@ export function TicketHeader({ ticket }: Props) {
           {ticket.category && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
               <Tag className="h-3 w-3" />
-              {ticket.category}
+              {ticketCategories[ticket.category as TicketCategory] ?? ticket.category}
             </span>
           )}
         </div>

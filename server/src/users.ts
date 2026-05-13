@@ -4,6 +4,7 @@ import { auth } from "./auth";
 import { db } from "./db";
 import { requireAdmin, requireAuth } from "./require-auth";
 import { UserRole } from "./generated/prisma/client";
+import { AI_AGENT_ID } from "./ai-agent";
 
 const userSelect = {
   id: true,
@@ -164,6 +165,12 @@ usersRouter.delete(
   requireAdmin,
   async (req: Request, res: Response) => {
     const id = String(req.params.id);
+
+    if (id === AI_AGENT_ID) {
+      res.status(403).json({ error: "AI agent cannot be deleted" });
+      return;
+    }
+
     const user = await db.user.findUnique({ where: { id } });
 
     if (!user || user.deletedAt !== null) {

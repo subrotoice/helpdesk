@@ -96,6 +96,48 @@ const ticketDetailSelect = {
 
 export const ticketsRouter = Router();
 
+type TicketStatsRow = {
+  totalTickets: bigint;
+  openTickets: bigint;
+  aiResolvedTickets: bigint;
+  percentAiResolved: number;
+  avgResolutionTimeMs: number;
+};
+
+ticketsRouter.get("/stats", requireAuth, async (_req: Request, res: Response) => {
+  const [row] = await db.$queryRaw<TicketStatsRow[]>`SELECT * FROM get_ticket_stats()`;
+
+  res.json({
+    totalTickets: Number(row.totalTickets),
+    openTickets: Number(row.openTickets),
+    aiResolvedTickets: Number(row.aiResolvedTickets),
+    percentAiResolved: Number(row.percentAiResolved),
+    avgResolutionTimeMs: Number(row.avgResolutionTimeMs),
+  });
+});
+
+ticketsRouter.get("/tickets/daily", requireAuth, async (_req: Request, res: Response) => {
+  const rows = await db.$queryRaw<Array<{ date: string; count: number }>>`
+    SELECT TO_CHAR(DATE("createdAt"), 'YYYY-MM-DD') as date, COUNT(*)::int as count
+    FROM ticket
+    WHERE "createdAt" >= CURRENT_DATE - INTERVAL '29 days'
+    GROUP BY DATE("createdAt")
+    ORDER BY date ASC
+  `;
+
+  const rowMap = new Map(rows.map((r) => [r.date, r.count]));
+
+  const result = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    d.setUTCDate(d.getUTCDate() - (29 - i));
+    const date = d.toISOString().slice(0, 10);
+    return { date, count: rowMap.get(date) ?? 0 };
+  });
+
+  res.json(result);
+});
+
 ticketsRouter.get(
   "/tickets/:id",
   requireAuth,

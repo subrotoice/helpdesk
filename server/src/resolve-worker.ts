@@ -5,6 +5,7 @@ import { generateText } from "ai";
 import { type Job } from "pg-boss";
 import { boss } from "./boss";
 import { db } from "./db";
+import { AI_AGENT_ID } from "./ai-agent";
 
 const knowledgeBase = readFileSync(join(import.meta.dir, "..", "knowledge-base.md"), "utf-8");
 
@@ -29,7 +30,7 @@ export async function registerResolveWorker() {
 
     const aiResponse = text.trim();
     if (aiResponse === CANNOT_RESOLVE) {
-      await db.ticket.update({ where: { id }, data: { status: "open" } });
+      await db.ticket.update({ where: { id }, data: { status: "open", assignedToId: null } });
       console.log(`[auto-resolve] ticket ${id} → cannot resolve, moved to open`);
       return;
     }

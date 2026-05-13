@@ -2,6 +2,7 @@ import "dotenv/config";
 import { auth } from "./auth";
 import { db } from "./db";
 import { UserRole } from "./generated/prisma/client";
+import { AI_AGENT_ID, AI_AGENT_EMAIL, AI_AGENT_NAME } from "./ai-agent";
 
 const email = process.env.ADMIN_EMAIL;
 const password = process.env.ADMIN_PASSWORD;
@@ -73,7 +74,26 @@ async function main() {
   console.log(`Created ${UserRole.admin} ${email} (id=${user.id})`);
 }
 
+async function ensureAiAgent() {
+  const now = new Date();
+  await db.user.upsert({
+    where: { id: AI_AGENT_ID },
+    update: {},
+    create: {
+      id: AI_AGENT_ID,
+      name: AI_AGENT_NAME,
+      email: AI_AGENT_EMAIL,
+      emailVerified: true,
+      role: UserRole.agent,
+      createdAt: now,
+      updatedAt: now,
+    },
+  });
+  console.log(`AI agent ensured (id=${AI_AGENT_ID})`);
+}
+
 main()
+  .then(() => ensureAiAgent())
   .catch((err) => {
     console.error(err);
     process.exitCode = 1;

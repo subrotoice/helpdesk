@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "./db";
 import { boss } from "./boss";
 import { CLASSIFY_QUEUE } from "./workers";
+import { AI_AGENT_ID } from "./ai-agent";
 
 const headerSchema = z.object({ name: z.string(), value: z.string() });
 
@@ -75,7 +76,7 @@ webhooksRouter.post("/email", async (req: Request, res: Response) => {
   const { name: senderName, email: senderEmail } = parseSender(from);
 
   const ticket = await db.ticket.create({
-    data: { subject, body, senderName, senderEmail, messageId, inReplyTo },
+    data: { subject, body, senderName, senderEmail, messageId, inReplyTo, assignedToId: AI_AGENT_ID },
   });
 
   res.status(201).json({ received: true, ticketId: ticket.id });

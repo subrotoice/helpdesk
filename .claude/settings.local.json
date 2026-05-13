@@ -86,7 +86,11 @@
       "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\"; $env:DATABASE_URL = \\(Get-Content server\\\\.env | Select-String \"^DATABASE_URL\" | ForEach-Object { \\($_ -split \"=\",2\\)[1] }\\); & psql $env:DATABASE_URL -c \"SELECT id, status, category FROM ticket WHERE id = 212;\" 2>&1)",
       "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; $out = bunx tsc --noEmit 2>&1; \\($out | Where-Object { $_ -notmatch \"seed-tickets\" }\\) -join \"`n\")",
       "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx tsc --noEmit 2>&1 | ForEach-Object { $_ } | Where-Object { $_ -notmatch \"seed-tickets\" } | Out-String)",
-      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx tsc --noEmit 2>&1 | ForEach-Object { if \\($_ -notmatch \"seed-tickets\"\\) { Write-Output $_ } })"
+      "PowerShell(Set-Location \"E:\\\\Tutorials\\\\helpdesk\\\\server\"; bunx tsc --noEmit 2>&1 | ForEach-Object { if \\($_ -notmatch \"seed-tickets\"\\) { Write-Output $_ } })",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "PowerShell(Get-Content *)",
+      "Bash(Start-Sleep -Seconds 4)",
+      "Bash(Get-Content \"C:\\\\Users\\\\WALTON\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Tutorials-helpdesk\\\\a38a5541-c5ce-4a22-b5df-4f922598b82c\\\\tasks\\\\bh9ruqlur.output\")"
     ]
   }
 }
